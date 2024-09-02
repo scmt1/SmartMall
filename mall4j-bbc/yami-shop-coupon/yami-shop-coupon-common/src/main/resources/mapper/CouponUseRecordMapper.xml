@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yami.shop.coupon.common.dao.CouponUseRecordMapper">
+
+    <resultMap id="couponUseMap" type="com.yami.shop.coupon.common.model.CouponUseRecord">
+        <id property="couponUseRecordId" column="coupon_use_record_id"/>
+        <!--<result property="couponId" column="coupon_id"/>-->
+        <result property="couponUserId" column="coupon_user_id"/>
+        <result property="orderNumber" column="order_number"/>
+        <result property="userId" column="user_id"/>
+        <result property="amount" column="amount"/>
+        <result property="useTime" column="use_time"/>
+    </resultMap>
+
+    <resultMap id="couponUseRecordOrderMap" type="com.yami.shop.coupon.common.model.CouponUseRecord">
+        <result column="coupon_use_record_id" property="couponUseRecordId"/>
+        <result column="order_number" property="orderNumber"/>
+        <result column="status" property="status"/>
+        <collection property="couponUser" ofType="com.yami.shop.coupon.common.model.CouponUser">
+            <id column="coupon_user_id" property="couponUserId"/>
+            <result column="user_end_time" property="userEndTime"/>
+            <collection property="coupon" ofType="com.yami.shop.coupon.common.model.Coupon">
+                <id column="coupon_id" property="couponId"/>
+                <result column="overdue_status" property="overdueStatus"/>
+                <result column="puton_status" property="putonStatus"/>
+            </collection>
+        </collection>
+    </resultMap>
+    <insert id="addCouponUseRecode">
+        INSERT INTO tz_coupon_use_record (coupon_user_id,user_id,order_number,amount,use_time,`status`) VALUES
+        <foreach collection="couponUseRecordsList" item="couponUseRecord" separator=",">
+            (#{couponUseRecord.couponUserId},#{couponUseRecord.userId},#{couponUseRecord.orderNumber},#{couponUseRecord.amount},#{couponUseRecord.useTime},#{couponUseRecord.status})
+        </foreach>
+    </insert>
+
+    <update id="batchUpdateRecordByStatusAndOrderNums">
+        <foreach collection="orderNumberList" item="orderNum" separator=";">
+            UPDATE tz_coupon_use_record SET `status` = #{status}
+            <where>
+                order_number like CONCAT('%',#{orderNum},'%')
+            </where>
+        </foreach>
+    </update>
+
+    <select id="listByOrderNumber" resultMap="couponUseRecordOrderMap">
+        SELECT cur.coupon_use_record_id,cu.coupon_user_id,cu.user_end_time,c.coupon_id,c.puton_status,c.overdue_status
+        FROM tz_coupon_use_record cur
+        JOIN tz_coupon_user cu ON cur.coupon_user_id = cu.coupon_user_id AND cu.status = 2
+        JOIN tz_coupon c ON cu.coupon_id = c.coupon_id
+        WHERE cur.order_number = #{orderNumber}
+    </select>
+    <select id="getOrderNumberContact" resultType="com.yami.shop.coupon.common.model.CouponUseRecord">
+        SELECT coupon_use_record_id,order_number
+        FROM tz_coupon_use_record cur
+        WHERE order_number LIKE CONCAT('%',#{orderNumber},'%')
+    </select>
+
+    <update id="batchUpdateRecordStatusByStatusAndIds">
+        <foreach collection="ids" item="id" separator=";">
+            UPDATE tz_coupon_use_record SET `status` = #{status} WHERE coupon_use_record_id = #{id}
+        </foreach>
+    </update>
+
+    <select id="listCouponUserIdsByOrderNumber" resultType="java.lang.Long">
+        SELECT coupon_user_id
+        FROM tz_coupon_use_record
+        WHERE FIND_IN_SET(#{orderNumber}, order_number)
+          and status = 0
+    </select>
+
+    <update id="unLockByIds">
+        update tz_coupon_use_record
+        set status = 3 where coupon_user_id in
+        <foreach collection="couponUserIds" item="couponUserId" separator="," open="(" close=")">
+            #{couponUserId}
+        </foreach>
+        and status = 1
+    </update>
+
+    <select id="shopWriteOffDetail" resultType="com.yami.shop.coupon.common.model.CouponUseRecord">
+        SELECT cur.*,sd.shop_name,c.coupon_name,u.nick_name,u.user_mobile
+        FROM tz_coupon_use_record cur
+        left JOIN tz_coupon_user cu ON cu.coupon_user_id = cur.coupon_user_id
+        left JOIN tz_shop_detail sd ON sd.shop_id = cur.write_off_shop_id
+        left JOIN tz_coupon c ON c.coupon_id = cu.coupon_id
+        left JOIN tz_user u ON u.user_id = cur.user_id
+        <where>
+            c.shop_id = 0
+            <if test="couponUseRecord.writeOffShopId != null">
+                AND cur.write_off_shop_id = #{couponUseRecord.writeOffShopId}
+            </if>
+            <if test="couponUseRecord.couponId != null">
+                AND cu.coupon_id = #{couponUseRecord.couponId}
+            </if>
+            <if test="couponUseRecord.beginTime!=null and couponUseRecord.endTime!=null">
+                and cur.use_time between #{couponUseRecord.beginTime} and #{couponUseRecord.endTime}
+            </if>
+            <if test="couponUseRecord.couponName !=null">
+                and trim(replace(c.coupon_name,' ','')) like trim(replace(concat('%',#{couponUseRecord.couponName},'%'),' ',''))
+            </if>
+            <if test="couponUseRecord.putonStatus != null">
+                AND c.puton_status = #{couponUseRecord.putonStatus}
+            </if>
+            <if test="couponUseRecord.putSource != null">
+                AND c.put_source = #{couponUseRecord.putSource}
+            </if>
+            <if test="couponUseRecord.overdueStatus != null">
+                AND c.overdue_status = #{couponUseRecord.overdueStatus}
+            </if>
+            <if test="couponUseRecord.launchEndTime != null">
+                AND c.launch_end_time &lt;= #{couponUseRecord.launchEndTime}
+            </if>
+            <if test="couponUseRecord.launchTime != null">
+                AND c.launch_time &gt;= #{couponUseRecord.launchTime}
+            </if>
+            <if test="couponUseRecord.couponEndTime != null">
+                AND c.end_time &lt;= #{couponUseRecord.couponEndTime}
+            </if>
+            <if test="couponUseRecord.couponStartTime != null">
+                AND c.start_time &gt;= #{couponUseRecord.couponStartTime}
+            </if>
+            and cur.status = 2
+        </where>
+        ORDER BY cur.use_time DESC
+        LIMIT #{adapter.begin} , #{adapter.size}
+    </select>
+
+    <select id="writeOffRecordPage" resultType="com.yami.shop.coupon.common.model.CouponUseRecord">
+        SELECT cur.*,sd.shop_name,c.coupon_name,u.nick_name,u.user_mobile
+        FROM tz_coupon_use_record cur
+        left JOIN tz_coupon_user cu ON cu.coupon_user_id = cur.coupon_user_id
+        left JOIN tz_shop_detail sd ON sd.shop_id = cur.write_off_shop_id
+        left JOIN tz_coupon c ON c.coupon_id = cu.coupon_id
+        left JOIN tz_user u ON u.user_id = cur.user_id
+        <where>
+            <if test="couponUseRecord.nickName != null and couponUseRecord.nickName != ''">
+                AND u.nick_name LIKE CONCAT('%',#{couponUseRecord.nickName},'%')
+            </if>
+            <if test="couponUseRecord.couponShopId != null">
+                AND c.shop_id = #{couponUseRecord.couponShopId}
+            </if>
+            <if test="couponUseRecord.writeOffShopId != null">
+                AND cur.write_off_shop_id = #{couponUseRecord.writeOffShopId}
+            </if>
+            <if test="couponUseRecord.couponId != null">
+                AND cu.coupon_id = #{couponUseRecord.couponId}
+            </if>
+            <if test="couponUseRecord.beginTime!=null and couponUseRecord.endTime!=null">
+                and cur.use_time between #{couponUseRecord.beginTime} and #{couponUseRecord.endTime}
+            </if>
+            <if test="couponUseRecord.putSource != null">
+                AND c.put_source = #{couponUseRecord.putSource}
+            </if>
+            and cur.status = 2
+        </where>
+        ORDER BY cur.use_time DESC
+        LIMIT #{adapter.begin} , #{adapter.size}
+    </select>
+
+    <select id="getShopWriteOffRecordList" resultType="com.yami.shop.coupon.common.model.CouponUseRecord">
+        SELECT cur.*,sd.shop_name,c.coupon_name,u.nick_name
+        FROM tz_coupon_use_record cur
+        left JOIN tz_coupon_user cu ON cu.coupon_user_id = cur.coupon_user_id
+        left JOIN tz_shop_detail sd ON sd.shop_id = cur.write_off_shop_id
+        left JOIN tz_coupon c ON c.coupon_id = cu.coupon_id
+        left JOIN tz_user u ON u.user_id = cur.user_id
+        <where>
+            c.shop_id = 0
+            <if test="couponUseRecord.writeOffShopId != null">
+                AND cur.write_off_shop_id = #{couponUseRecord.writeOffShopId}
+            </if>
+            <if test="couponUseRecord.couponId != null">
+                AND cu.coupon_id = #{couponUseRecord.couponId}
+            </if>
+            <if test="couponUseRecord.beginTime!=null and couponUseRecord.endTime!=null">
+                and cur.use_time between #{couponUseRecord.beginTime} and #{couponUseRecord.endTime}
+            </if>
+            <if test="couponUseRecord.couponName !=null">
+                and trim(replace(c.coupon_name,' ','')) like trim(replace(concat('%',#{couponUseRecord.couponName},'%'),' ',''))
+            </if>
+            <if test="couponUseRecord.putonStatus != null">
+                AND c.puton_status = #{couponUseRecord.putonStatus}
+            </if>
+            <if test="couponUseRecord.putSource != null">
+                AND c.put_source = #{couponUseRecord.putSource}
+            </if>
+            <if test="couponUseRecord.overdueStatus != null">
+                AND c.overdue_status = #{couponUseRecord.overdueStatus}
+            </if>
+            <if test="couponUseRecord.launchEndTime != null">
+                AND c.launch_end_time &lt;= #{couponUseRecord.launchEndTime}
+            </if>
+            <if test="couponUseRecord.launchTime != null">
+                AND c.launch_time &gt;= #{couponUseRecord.launchTime}
+            </if>
+            <if test="couponUseRecord.couponEndTime != null">
+                AND c.end_time &lt;= #{couponUseRecord.couponEndTime}
+            </if>
+            <if test="couponUseRecord.couponStartTime != null">
+                AND c.start_time &gt;= #{couponUseRecord.couponStartTime}
+            </if>
+            and cur.status = 2
+        </where>
+        ORDER BY cur.use_time DESC
+    </select>
+
+    <select id="getWriteOffRecordList" resultType="com.yami.shop.coupon.common.model.CouponUseRecord">
+        SELECT cur.*,sd.shop_name,c.coupon_name,u.nick_name
+        FROM tz_coupon_use_record cur
+        left JOIN tz_coupon_user cu ON cu.coupon_user_id = cur.coupon_user_id
+        left JOIN tz_shop_detail sd ON sd.shop_id = cur.write_off_shop_id
+        left JOIN tz_coupon c ON c.coupon_id = cu.coupon_id
+        left JOIN tz_user u ON u.user_id = cur.user_id
+        <where>
+            <if test="couponUseRecord.nickName != null and couponUseRecord.nickName != ''">
+                AND u.nick_name LIKE CONCAT('%',#{couponUseRecord.nickName},'%')
+            </if>
+            <if test="couponUseRecord.couponShopId != null">
+                AND c.shop_id = #{couponUseRecord.couponShopId}
+            </if>
+            <if test="couponUseRecord.writeOffShopId != null">
+                AND cur.write_off_shop_id = #{couponUseRecord.writeOffShopId}
+            </if>
+            <if test="couponUseRecord.couponId != null">
+                AND cu.coupon_id = #{couponUseRecord.couponId}
+            </if>
+            <if test="couponUseRecord.beginTime!=null and couponUseRecord.endTime!=null">
+                and cur.use_time between #{couponUseRecord.beginTime} and #{couponUseRecord.endTime}
+            </if>
+            <if test="couponUseRecord.putSource != null">
+                AND c.put_source = #{couponUseRecord.putSource}
+            </if>
+            and cur.status = 2
+        </where>
+        ORDER BY cur.use_time DESC
+    </select>
+
+    <select id="countGetShopWriteOffRecord" resultType="java.lang.Integer">
+        SELECT COUNT(cur.coupon_use_record_id)
+        FROM tz_coupon_use_record cur
+        left JOIN tz_coupon_user cu ON cu.coupon_user_id = cur.coupon_user_id
+        left JOIN tz_coupon c ON c.coupon_id = cu.coupon_id
+        <where>
+            c.shop_id = 0
+            <if test="couponUseRecord.writeOffShopId != null">
+                AND cur.write_off_shop_id = #{couponUseRecord.writeOffShopId}
+            </if>
+            <if test="couponUseRecord.couponId != null">
+                AND cu.coupon_id = #{couponUseRecord.couponId}
+            </if>
+            <if test="couponUseRecord.beginTime!=null and couponUseRecord.endTime!=null">
+                and cur.use_time between #{couponUseRecord.beginTime} and #{couponUseRecord.endTime}
+            </if>
+            <if test="couponUseRecord.couponName !=null">
+                and trim(replace(c.coupon_name,' ','')) like trim(replace(concat('%',#{couponUseRecord.couponName},'%'),' ',''))
+            </if>
+            <if test="couponUseRecord.putonStatus != null">
+                AND c.puton_status = #{couponUseRecord.putonStatus}
+            </if>
+            <if test="couponUseRecord.putSource != null">
+                AND c.put_source = #{couponUseRecord.putSource}
+            </if>
+            <if test="couponUseRecord.overdueStatus != null">
+                AND c.overdue_status = #{couponUseRecord.overdueStatus}
+            </if>
+            <if test="couponUseRecord.launchEndTime != null">
+                AND c.launch_end_time &lt;= #{couponUseRecord.launchEndTime}
+            </if>
+            <if test="couponUseRecord.launchTime != null">
+                AND c.launch_time &gt;= #{couponUseRecord.launchTime}
+            </if>
+            <if test="couponUseRecord.couponEndTime != null">
+                AND c.end_time &lt;= #{couponUseRecord.couponEndTime}
+            </if>
+            <if test="couponUseRecord.couponStartTime != null">
+                AND c.start_time &gt;= #{couponUseRecord.couponStartTime}
+            </if>
+            and cur.status = 2
+        </where>
+        ORDER BY cur.use_time DESC
+    </select>
+
+    <select id="countGetWriteOffRecordPageByParam" resultType="java.lang.Integer">
+        SELECT COUNT(cur.coupon_use_record_id)
+        FROM tz_coupon_use_record cur
+        left JOIN tz_coupon_user cu ON cu.coupon_user_id = cur.coupon_user_id
+        left JOIN tz_coupon c ON c.coupon_id = cu.coupon_id
+        left JOIN tz_user u ON u.user_id = cur.user_id
+        <where>
+            <if test="couponUseRecord.nickName != null and couponUseRecord.nickName != ''">
+                AND u.nick_name LIKE CONCAT('%',#{couponUseRecord.nickName},'%')
+            </if>
+            <if test="couponUseRecord.couponShopId != null">
+                AND c.shop_id = #{couponUseRecord.couponShopId}
+            </if>
+            <if test="couponUseRecord.writeOffShopId != null">
+                AND cur.write_off_shop_id = #{couponUseRecord.writeOffShopId}
+            </if>
+            <if test="couponUseRecord.couponId != null">
+                AND cu.coupon_id = #{couponUseRecord.couponId}
+            </if>
+            <if test="couponUseRecord.beginTime!=null and couponUseRecord.endTime!=null">
+                and cur.use_time between #{couponUseRecord.beginTime} and #{couponUseRecord.endTime}
+            </if>
+            <if test="couponUseRecord.putSource != null">
+                AND c.put_source = #{couponUseRecord.putSource}
+            </if>
+            and cur.status = 2
+        </where>
+        ORDER BY cur.use_time DESC
+    </select>
+
+    <select id="writeOffDetail" resultType="com.yami.shop.coupon.common.model.CouponUseRecord">
+        select count(write_off_shop_id) as write_off_num,tz_shop_detail.shop_name,tz_coupon_use_record.write_off_shop_id from tz_coupon_use_record
+        left JOIN tz_shop_detail on tz_coupon_use_record.write_off_shop_id = tz_shop_detail.shop_id
+        left JOIN tz_coupon_user on tz_coupon_user.coupon_user_id = tz_coupon_use_record.coupon_user_id
+        left JOIN tz_coupon on tz_coupon.coupon_id = tz_coupon_user.coupon_id where tz_coupon.shop_id = #{couponUseRecord.writeOffShopId}
+        <if test="couponUseRecord.beginTime!=null and couponUseRecord.endTime!=null">
+            and tz_coupon_use_record.use_time between #{couponUseRecord.beginTime} and #{couponUseRecord.endTime}
+        </if>
+        <if test="couponUseRecord.couponName !=null">
+            and trim(replace(tz_coupon.coupon_name,' ','')) like trim(replace(concat('%',#{couponUseRecord.couponName},'%'),' ',''))
+        </if>
+        <if test="couponUseRecord.putonStatus != null">
+            AND tz_coupon.puton_status = #{couponUseRecord.putonStatus}
+        </if>
+        <if test="couponUseRecord.putSource != null">
+            AND tz_coupon.put_source = #{couponUseRecord.putSource}
+        </if>
+        <if test="couponUseRecord.overdueStatus != null">
+            AND tz_coupon.overdue_status = #{couponUseRecord.overdueStatus}
+        </if>
+        <if test="couponUseRecord.launchEndTime != null">
+            AND tz_coupon.launch_end_time &lt;= #{couponUseRecord.launchEndTime}
+        </if>
+        <if test="couponUseRecord.launchTime != null">
+            AND tz_coupon.launch_time &gt;= #{couponUseRecord.launchTime}
+        </if>
+        <if test="couponUseRecord.couponEndTime != null">
+            AND tz_coupon.end_time &lt;= #{couponUseRecord.couponEndTime}
+        </if>
+        <if test="couponUseRecord.couponStartTime != null">
+            AND tz_coupon.start_time &gt;= #{couponUseRecord.couponStartTime}
+        </if>
+        and tz_coupon_use_record.status = 2
+         GROUP BY tz_coupon_use_record.write_off_shop_id ORDER BY write_off_num desc
+    </select>
+
+    <select id="statisticCouponUse" resultType="com.yami.shop.coupon.common.model.CouponUseRecord">
+        SELECT sum(cur.amount) as actualAmount,count(cur.coupon_use_record_id) as writeOffCount,
+        SUM(IF(DATE_FORMAT(cur.create_time,'%Y-%m-%d') = date_sub(curdate(),interval 1 day),cur.amount,0)) AS yesterdayAmount,
+        SUM(CASE WHEN DATE_FORMAT(cur.create_time,'%Y-%m-%d') = date_sub(curdate(),interval 1 day)  THEN 1 ELSE 0 END) AS yesterdayCount,
+        SUM(IF(DATE_FORMAT(cur.create_time,'%Y-%m-%d') = curdate(),cur.amount,0)) AS toDayAmount,
+        SUM(CASE WHEN DATE_FORMAT(cur.create_time,'%Y-%m-%d') = curdate()  THEN 1 ELSE 0 END) AS toDayCount
+        FROM tz_coupon_use_record cur
+        left JOIN tz_coupon_user cu ON cu.coupon_user_id = cur.coupon_user_id
+        left JOIN tz_coupon c ON c.coupon_id = cu.coupon_id
+        left JOIN tz_user u ON u.user_id = cur.user_id
+        <where>
+            <if test="couponUseRecord.nickName != null and couponUseRecord.nickName != ''">
+                AND u.nick_name LIKE CONCAT('%',#{couponUseRecord.nickName},'%')
+            </if>
+            <if test="couponUseRecord.couponShopId != null">
+                AND c.shop_id = #{couponUseRecord.couponShopId}
+            </if>
+            <if test="couponUseRecord.writeOffShopId != null">
+                AND cur.write_off_shop_id = #{couponUseRecord.writeOffShopId}
+            </if>
+            <if test="couponUseRecord.couponId != null">
+                AND cu.coupon_id = #{couponUseRecord.couponId}
+            </if>
+            <if test="couponUseRecord.beginTime!=null and couponUseRecord.endTime!=null">
+                and cur.use_time between #{couponUseRecord.beginTime} and #{couponUseRecord.endTime}
+            </if>
+            <if test="couponUseRecord.putSource != null">
+                AND c.put_source = #{couponUseRecord.putSource}
+            </if>
+            and cur.status = 2
+        </where>
+    </select>
+</mapper>

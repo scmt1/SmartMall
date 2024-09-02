@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yami.shop.combo.multishop.dao.ComboProdSkuMapper">
+
+  <resultMap id="comboProdSkuMap" type="com.yami.shop.combo.multishop.model.ComboProdSku">
+    <id column="combo_prod_id" property="comboProdId" />
+    <result column="sku_id" property="skuId"/>
+    <result column="matching_price" property="matchingPrice"/>
+  </resultMap>
+  <insert id="insertBatch">
+    insert into tz_combo_prod_sku (`combo_prod_id`,`sku_id`,`matching_price`) values
+    <foreach collection="skuList" item="sku" separator=",">
+      (#{comboProdId},#{sku.skuId},#{sku.matchingPrice})
+    </foreach>
+  </insert>
+  <select id="listByProdIdAndComboId" resultMap="comboProdSkuMap">
+    SELECT * FROM `tz_combo_prod_sku`
+    WHERE combo_prod_id IN (SELECT combo_prod_id FROM tz_combo_prod WHERE combo_id = #{comboId} AND prod_id = #{prodId} AND `status` = 1)
+  </select>
+</mapper>

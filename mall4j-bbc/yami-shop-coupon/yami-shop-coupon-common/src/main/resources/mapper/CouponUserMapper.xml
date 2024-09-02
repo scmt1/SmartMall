@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yami.shop.coupon.common.dao.CouponUserMapper">
+    <resultMap id="BaseResultMap" type="com.yami.shop.coupon.common.model.CouponUser">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="coupon_user_id" jdbcType="BIGINT" property="couponUserId"/>
+        <result column="coupon_id" jdbcType="BIGINT" property="couponId"/>
+        <result column="user_id" jdbcType="VARCHAR" property="userId"/>
+        <result column="receive_time" jdbcType="TIMESTAMP" property="receiveTime"/>
+        <result column="status" jdbcType="TINYINT" property="status"/>
+        <result column="user_start_time" jdbcType="TIMESTAMP" property="userStartTime"/>
+        <result column="user_end_time" jdbcType="TIMESTAMP" property="userEndTime"/>
+        <result column="is_delete" jdbcType="TINYINT" property="isDelete"/>
+    </resultMap>
+
+    <resultMap id="CouponAndCouponUserMap" type="com.yami.shop.coupon.common.model.CouponUser">
+        <result column="coupon_user_id" jdbcType="BIGINT" property="couponUserId"/>
+        <result column="coupon_id" jdbcType="BIGINT" property="couponId"/>
+        <result column="user_id" jdbcType="VARCHAR" property="userId"/>
+        <result column="receive_time" jdbcType="TIMESTAMP" property="receiveTime"/>
+        <result column="status" jdbcType="TINYINT" property="status"/>
+        <result column="user_start_time" jdbcType="TIMESTAMP" property="userStartTime"/>
+        <result column="user_end_time" jdbcType="TIMESTAMP" property="userEndTime"/>
+        <association property="coupon" javaType="com.yami.shop.coupon.common.model.Coupon">
+            <result column="coupon_id" jdbcType="BIGINT" property="couponId"/>
+            <result column="shop_id" jdbcType="BIGINT" property="shopId"/>
+            <result column="coupon_name" jdbcType="VARCHAR" property="couponName"/>
+            <result column="sub_title" jdbcType="VARCHAR" property="subTitle"/>
+            <result column="coupon_type" jdbcType="TINYINT" property="couponType"/>
+            <result column="cash_condition" jdbcType="DECIMAL" property="cashCondition"/>
+            <result column="reduce_amount" jdbcType="DECIMAL" property="reduceAmount"/>
+            <result column="coupon_discount" jdbcType="DECIMAL" property="couponDiscount"/>
+            <result column="valid_time_type" jdbcType="TINYINT" property="validTimeType"/>
+            <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+            <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+            <result column="after_receive_days" jdbcType="INTEGER" property="afterReceiveDays"/>
+            <result column="valid_days" jdbcType="INTEGER" property="validDays"/>
+            <result column="stocks" jdbcType="INTEGER" property="stocks"/>
+            <result column="suitable_prod_type" jdbcType="TINYINT" property="suitableProdType"/>
+            <result column="limit_num" jdbcType="INTEGER" property="limitNum"/>
+            <result column="version" jdbcType="INTEGER" property="version"/>
+            <result column="overdue_status" jdbcType="TINYINT" property="overdueStatus"/>
+            <result column="puton_status" jdbcType="TINYINT" property="putonStatus"/>
+            <result column="shop_name" jdbcType="VARCHAR" property="shopName"/>
+        </association>
+    </resultMap>
+
+    <select id="getCouponAndCouponUserByUserId" resultMap="CouponAndCouponUserMap">
+        select cu.*,c.*,sd.shop_name from tz_coupon_user cu
+        left join tz_coupon c on cu.coupon_id = c.coupon_id
+        left join tz_shop_detail sd on c.shop_id = sd.shop_id
+        where cu.user_id = #{userId} and (cu.status = 0 or cu.status = 1)
+   </select>
+
+    <select id="getCouponAndCouponUserByCouponUserIds" resultMap="CouponAndCouponUserMap">
+        select cu.*,c.* from tz_coupon_user cu
+        left join tz_coupon c on cu.coupon_id = c.coupon_id
+        where cu.coupon_user_id in
+        <foreach collection="couponUserIds" item="couponUserId" separator="," open="(" close=")">
+            #{couponUserId}
+        </foreach>
+        and cu.status = 1 and c.overdue_status = 1 and c.puton_status = 1
+    </select>
+    <select id="getCouponAnalysisParamByDate" resultType="com.yami.shop.bean.param.CouponAnalysisParam">
+        select c.coupon_name as couponName,c.coupon_type as couponType,
+               COUNT(cu.coupon_user_id) as takeNum,
+               cu.receive_time as currentDay,cu.coupon_id as couponId
+        from `tz_coupon_user` cu
+        left join `tz_coupon` c on cu.coupon_id = c.coupon_id
+        <where>
+            <if test="param.startTime != null and param.endTime != null">
+                AND (cu.receive_time <![CDATA[ >= ]]> #{param.startTime} AND cu.receive_time <![CDATA[ <= ]]> #{param.endTime})
+            </if>
+            <if test="param.shopId != null">
+                AND c.shop_id = #{param.shopId}
+            </if>
+        </where>
+            GROUP BY cu.coupon_id
+            order by cu.receive_time DESC
+    </select>
+    <select id="countUseNum" resultType="java.lang.Integer">
+        select count(cur.coupon_use_record_id)
+        from `tz_coupon_user` cu
+        LEFT JOIN `tz_coupon_use_record` cur ON cur.coupon_user_id = cu.coupon_user_id
+        <if test="param.startTime != null and param.endTime != null">
+            AND (cur.use_time <![CDATA[ >= ]]> #{param.startTime} AND cur.use_time <![CDATA[ <= ]]> #{param.endTime})
+        </if>
+        where cu.coupon_id = #{couponId}
+        group by cu.coupon_id
+    </select>
+    <select id="countTakeNum" resultType="java.lang.Integer">
+        SELECT COUNT(coupon_user_id)
+        FROM `tz_coupon_user` cu LEFT JOIN `tz_coupon` tc ON cu.coupon_id = tc.coupon_id
+        <where>
+            <if test="param.shopId != null">
+                AND tc.shop_id = #{param.shopId}
+            </if>
+            <if test="param.startTime != null and param.endTime != null">
+                AND (cu.receive_time <![CDATA[ >= ]]> #{param.startTime} AND cu.receive_time <![CDATA[ <= ]]> #{param.endTime})
+            </if>
+            <if test="couponId != null">
+                AND cu.coupon_id = #{couponId}
+            </if>
+            <if test="status != null">
+                AND cu.status = #{status}
+            </if>
+        </where>
+    </select>
+    <select id="countMemberGetCoupon" resultType="java.lang.Integer"
+            parameterType="com.yami.shop.bean.param.CustomerReqParam">
+        SELECT COUNT(DISTINCT(cu.user_id))
+        FROM `tz_coupon_user` cu LEFT JOIN `tz_coupon` tc ON cu.coupon_id = tc.coupon_id
+        LEFT JOIN `tz_user_extension` ue ON ue.user_id = cu.user_id
+        <where>
+            ue.level_type <![CDATA[ >= ]]> 0
+            <if test="param.shopId != null">
+                AND tc.shop_id = #{param.shopId}
+            </if>
+            <if test="param.startTime != null and param.endTime != null">
+                AND (cu.receive_time <![CDATA[ >= ]]> #{param.startTime} AND cu.receive_time <![CDATA[ <= ]]> #{param.endTime})
+            </if>
+        </where>
+    </select>
+    <select id="countMemberCouponByParam" resultType="java.lang.Integer"
+            parameterType="com.yami.shop.bean.param.MemberReqParam">
+        SELECT COUNT(DISTINCT(cu.user_id))
+        FROM `tz_coupon_user` cu LEFT JOIN `tz_coupon` tc ON cu.coupon_id = tc.coupon_id
+        LEFT JOIN `tz_user_extension` ue ON ue.user_id = cu.user_id
+        <where>
+            <choose>
+                <when test="param.memberType == 1">
+                    AND ue.level_type = 0
+                </when>
+                <when test="param.memberType == 2">
+                    AND ue.level_type = 1
+                </when>
+            </choose>
+            <if test="param.shopId != null">
+                AND tc.shop_id = #{param.shopId}
+            </if>
+            <if test="param.startTime != null and param.endTime != null">
+                AND (cu.receive_time <![CDATA[ >= ]]> #{param.startTime} AND cu.receive_time <![CDATA[ <= ]]> #{param.endTime})
+            </if>
+        </where>
+    </select>
+
+    <select id="countCouponUsedNums" resultType="java.lang.Integer" parameterType="java.lang.String">
+        SELECT COUNT(1) FROM `tz_coupon_user` cu
+        WHERE cu.status = 2 AND cu.user_id = #{userId} AND cu.is_delete = 0
+    </select>
+    <select id="countCouponExpiredNums" resultType="java.lang.Integer" parameterType="java.lang.String">
+        SELECT COUNT(1) FROM `tz_coupon_user` cu
+        WHERE cu.status = 0 AND cu.user_id = #{userId} AND cu.is_delete = 0
+    </select>
+    <select id="countCouponUsableNums" resultType="java.lang.Integer">
+         SELECT COUNT(1) FROM `tz_coupon_user` cu
+        WHERE cu.user_id = #{userId} AND cu.is_delete = 0
+        AND cu.status = 1
+    </select>
+    <select id="getPageByUserId" resultMap="CouponAndCouponUserMap">
+        SELECT
+        cu.coupon_user_id,
+        c.coupon_name,
+        c.coupon_type,
+        cu.user_start_time,
+        cu.user_end_time,
+        cu.status,
+        c.cash_condition,
+        c.reduce_amount,
+        c.coupon_discount,
+        cu.receive_time
+        FROM `tz_coupon_user` cu
+        LEFT JOIN `tz_coupon` c ON c.coupon_id = cu.coupon_id
+        <where>
+            cu.user_id = #{userId} AND cu.is_delete = 0
+            <if test="status != null">
+                AND cu.status = #{status}
+            </if>
+        </where>
+        ORDER BY cu.receive_time DESC
+    </select>
+
+    <delete id="deleteUnValidTimeCoupons">
+    delete from tz_coupon_user where user_end_time &lt; #{date} and status = 0
+     </delete>
+
+    <update id="updateStatusByTime">
+    update tz_coupon_user set status = 0 where user_end_time &lt; #{now} and status != 2
+   </update>
+
+    <update id="deleteUserCoupon">
+        UPDATE tz_coupon_user cu SET cu.is_delete =1 WHERE cu.user_id =#{userId} AND cu.coupon_id = #{couponId}
+    </update>
+
+    <update id="updateUseStatusByCouponUserId">
+        UPDATE tz_coupon_user SET `status` = #{status} WHERE coupon_user_id = #{couponUserId}
+    </update>
+
+    <update id="batchUpdateUserCouponStatus">
+        UPDATE tz_coupon_user SET `status` = #{status}
+        WHERE coupon_user_id IN
+        <foreach collection="couponUserIds" item="userCouponId" open="(" close=")" separator=",">
+            #{userCouponId}
+        </foreach>
+    </update>
+
+    <update id="updateStatusByOrderNumber">
+        UPDATE tz_coupon_user SET `status` = #{status}
+        WHERE order_number = #{orderNumber}
+    </update>
+
+    <select id="countNormalByCouponUserId" resultType="int">
+        select ifnull(count(*),0) from tz_coupon tc
+        join tz_coupon_user tcu on tc.coupon_id = tcu.coupon_id
+        left join tz_coupon_prod tcp on tcp.coupon_id = tc.coupon_id
+        where tcu.user_id = #{userId}
+        -- 获取用户未使用的优惠券
+        and tc.puton_status NOT IN (2,3)
+        and tcu.status = 1
+        and tcu.is_delete = 0
+        and tcu.coupon_user_id in
+        <foreach collection="couponUserIds" item="couponUserId" separator="," open="(" close=")">
+            #{couponUserId}
+        </foreach>
+    </select>
+
+    <select id="listByCouponIdsAndUserId" resultType="com.yami.shop.coupon.common.model.CouponUser">
+        SELECT coupon_id, COUNT(*) cur_user_receive_count, SUM(IF(`status` = 1,1,0)) user_has_count  FROM tz_coupon_user
+        WHERE user_id = #{userId}
+        GROUP BY coupon_id
+    </select>
+
+
+    <select id="getCouponUserByQrCode" resultType="com.yami.shop.coupon.common.model.CouponUser">
+        SELECT * FROM tz_coupon_user WHERE coupon_user_id = (SELECT coupon_user_id FROM tz_coupon_qrcode WHERE qr_code = #{couponUserNumber})
+    </select>
+
+    <select id="getCouponUserPage" resultType="com.yami.shop.coupon.common.model.CouponUser">
+        SELECT cu.*,u.nick_name,u.user_mobile,c.coupon_name FROM tz_coupon_user cu
+        left join tz_user u on u.user_id = cu.user_id
+        left join tz_coupon c on c.coupon_id = cu.coupon_id
+        <where>
+            <if test="couponUser.couponId != null">
+                AND cu.coupon_id = #{couponUser.couponId}
+            </if>
+            <if test="couponUser.status != null">
+                AND cu.status = #{couponUser.status}
+            </if>
+            <if test="couponUser.userMobile != null and couponUser.userMobile != ''">
+                AND u.user_mobile LIKE CONCAT('%',#{couponUser.userMobile},'%')
+            </if>
+        </where>
+        ORDER BY cu.receive_time DESC
+        LIMIT #{adapter.begin} , #{adapter.size}
+    </select>
+
+    <select id="countGetCouponUserPageByParam" resultType="java.lang.Integer">
+        SELECT COUNT(cu.coupon_user_id)
+        FROM tz_coupon_user cu
+        left join tz_user u on u.user_id = cu.user_id
+        <where>
+            <if test="couponUser.couponId != null">
+                AND cu.coupon_id = #{couponUser.couponId}
+            </if>
+            <if test="couponUser.status != null">
+                AND cu.status = #{couponUser.status}
+            </if>
+            <if test="couponUser.userMobile != null and couponUser.userMobile != ''">
+                AND u.user_mobile LIKE CONCAT('%',#{couponUser.userMobile},'%')
+            </if>
+        </where>
+        ORDER BY cu.receive_time DESC
+    </select>
+    <select id="queryNotUseCouponUserData" resultType="com.yami.shop.bean.model.CouponAppConnect">
+        SELECT tz_app_connect.biz_user_id AS openid,
+               tz_coupon_user.user_end_time,
+               tz_coupon.coupon_name,
+               tz_coupon.cash_condition,
+               tz_coupon.reduce_amount
+        FROM tz_app_connect
+                 join tz_coupon_user ON tz_coupon_user.user_id = tz_app_connect.user_id
+                 join tz_coupon ON tz_coupon.coupon_id = tz_coupon_user.coupon_id
+        WHERE tz_coupon_user.status = 1 and tz_app_connect.app_id = 2
+    </select>
+
+    <select id="couponSendMessage" resultType="com.yami.shop.coupon.common.model.CouponUser">
+        select cu.*,c.coupon_name,u.user_mobile,DATEDIFF(cu.user_end_time, CURDATE()) as day from tz_coupon_user cu
+        left join tz_coupon c on c.coupon_id = cu.coupon_id
+        left join tz_user u on u.user_id = cu.user_id
+        where cu.`status` = 1 and DATEDIFF(cu.user_end_time, CURDATE()) = 3
+        and c.coupon_type in (1,2,3) and c.is_group = 1
+    </select>
+
+    <select id="getCouponUserList" resultType="com.yami.shop.coupon.common.model.CouponUser">
+        SELECT cu.*,u.nick_name,u.user_mobile,c.coupon_name FROM tz_coupon_user cu
+        left join tz_user u on u.user_id = cu.user_id
+        left join tz_coupon c on c.coupon_id = cu.coupon_id
+        <where>
+            <if test="couponUser.couponId != null">
+                AND cu.coupon_id = #{couponUser.couponId}
+            </if>
+            <if test="couponUser.status != null">
+                AND cu.status = #{couponUser.status}
+            </if>
+            <if test="couponUser.userMobile != null and couponUser.userMobile != ''">
+                AND u.user_mobile LIKE CONCAT('%',#{couponUser.userMobile},'%')
+            </if>
+        </where>
+        ORDER BY cu.receive_time DESC
+    </select>
+</mapper>

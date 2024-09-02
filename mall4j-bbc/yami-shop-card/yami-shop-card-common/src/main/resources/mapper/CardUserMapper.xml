@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yami.shop.card.common.dao.CardUserMapper">
+    <update id="updateBalance">
+        update tz_card_user set balance = balance-#{reduceAmount} WHERE tz_card_user.card_user_id = #{cardUserId} AND balance <![CDATA[ >= ]]> #{reduceAmount}
+    </update>
+
+    <select id="getCardUserList" resultType="com.yami.shop.card.common.dto.CardUserDto">
+        select cu.*,c.card_title,c.card_img,c.card_logo from tz_card_user cu
+        left join tz_card c on cu.card_id = c.card_id
+        <where>
+            <if test="cardUser.userId != null and cardUser.userId != ''">
+                and  cu.user_id = #{cardUser.userId}
+            </if>
+            <if test="cardUser.status != null">
+                and  cu.status = #{cardUser.status}
+            </if>
+            <if test="cardUser.orderNumber != null and cardUser.orderNumber != ''">
+                and (cu.card_id in (select card_id from tz_card_shop where shop_id =
+                (select tz_order.shop_id from tz_order where tz_order.order_number = #{cardUser.orderNumber}))
+                or c.suitable_prod_type = 1)
+            </if>
+            and cu.is_delete = 0
+        </where>
+    </select>
+
+    <select id="getCardUserPage" resultType="com.yami.shop.card.common.model.CardUser">
+        select tz_card_user.*,tz_user.user_mobile,tz_user.nick_name,tz_card.card_title,tz_card.balance as cardAmount
+        from tz_card_user
+        left join tz_user on tz_user.user_id = tz_card_user.user_id
+        left join tz_card on tz_card.card_code = tz_card_user.card_number
+        <where>
+            <if test="cardUser.couponId != null">
+                and  tz_card_user.coupon_id=#{cardUser.couponId}
+            </if>
+            <if test="cardUser.userMobile != null and cardUser.userMobile != ''">
+                and  tz_user.user_mobile LIKE concat('%',#{cardUser.userMobile},'%')
+            </if>
+            <if test="cardUser.status != null">
+                and  tz_card_user.status=#{cardUser.status}
+            </if>
+        </where>
+    </select>
+
+    <select id="downloadBuyRecord" resultType="com.yami.shop.card.common.model.CardUser">
+        select tz_card_user.*,tz_user.user_mobile,tz_user.nick_name,tz_card.card_title,
+        tz_card.balance as cardAmount
+        from tz_card_user
+        left join tz_user on tz_user.user_id = tz_card_user.user_id
+        left join tz_card on tz_card.card_code = tz_card_user.card_number
+        <where>
+            <if test="cardUser.couponId != null">
+                and  tz_card_user.coupon_id=#{cardUser.couponId}
+            </if>
+            <if test="cardUser.userMobile != null and cardUser.userMobile != ''">
+                and  tz_user.user_mobile LIKE concat('%',#{cardUser.userMobile},'%')
+            </if>
+            <if test="cardUser.status != null">
+                and  tz_card_user.status=#{cardUser.status}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateCardUserStatusByTime">
+        update tz_card_user set status = 0 where date_add(user_end_time, interval 1 day) &lt; #{now}
+    </update>
+
+    <select id="cardSendMessage" resultType="com.yami.shop.card.common.model.CardUser">
+        select cu.*,c.card_title,u.user_mobile,DATEDIFF(cu.user_end_time, CURDATE()) as day from tz_card_user cu
+        left join tz_card c on c.card_code = cu.card_number
+        left join tz_user u on u.user_id = cu.user_id
+        where cu.`status` = 1 and DATEDIFF(cu.user_end_time, CURDATE()) = 3
+    </select>
+</mapper>

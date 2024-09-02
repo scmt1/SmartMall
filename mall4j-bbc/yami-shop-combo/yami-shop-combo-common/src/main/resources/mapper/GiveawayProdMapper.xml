@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yami.shop.combo.multishop.dao.GiveawayProdMapper">
+
+  <resultMap id="giveawayProdMap" type="com.yami.shop.bean.model.GiveawayProd">
+    <id column="giveaway_prod_id" property="giveawayProdId" />
+    <result column="giveaway_id" property="giveawayId"/>
+    <result column="prod_id" property="prodId"/>
+    <result column="sku_id" property="skuId"/>
+    <result column="giveaway_num" property="giveawayNum"/>
+    <result column="refund_price" property="refundPrice"/>
+    <result column="status" property="status"/>
+  </resultMap>
+  <resultMap id="GiveawayProdVOMap" type="com.yami.shop.bean.vo.GiveawayVO">
+    <id column="giveaway_id" property="giveawayId" />
+    <result column="name" property="name"/>
+    <result column="prod_id" property="prodId"/>
+    <result column="status" property="status"/>
+    <result column="buy_num" property="buyNum"/>
+    <result column="start_time" property="startTime"/>
+    <result column="end_time" property="endTime"/>
+    <collection property="giveawayProds" ofType="com.yami.shop.bean.vo.GiveawayProdVO">
+      <result property="prodId" column="g_prod_id"/>
+      <result property="skuId" column="g_sku_id"/>
+      <result property="giveawayNum" column="giveaway_num"/>
+      <result property="status" column="s_status"/>
+      <result property="prodName" column="prod_name"/>
+      <result property="skuName" column="sku_name"/>
+      <result property="pic" column="pic"/>
+      <result property="refundPrice" column="refund_price"/>
+    </collection>
+  </resultMap>
+  <insert id="insertBatch">
+    insert into tz_giveaway_prod (`giveaway_id`,`prod_id`,`sku_id`,`giveaway_num`,`refund_price`) values
+    <foreach collection="giveawayProds" item="giveawayProd" separator=",">
+      (#{giveawayId},#{giveawayProd.prodId},#{giveawayProd.skuId},#{giveawayProd.giveawayNum},#{giveawayProd.refundPrice})
+    </foreach>
+  </insert>
+  <select id="getGiveawayByProdId" resultMap="GiveawayProdVOMap">
+    SELECT g.`name`,g.buy_num,g.`status`,g.`giveaway_id`,g.`start_time`,g.`end_time`,gp.refund_price,gp.`prod_id` g_prod_id,gp.`sku_id` g_sku_id, gp.`giveaway_num`,p.pic
+    FROM `tz_giveaway` g
+      JOIN `tz_giveaway_prod` gp ON gp.`giveaway_id` = g.`giveaway_id` AND gp.`status` = 1
+    JOIN `tz_prod` p ON p.prod_id = gp.prod_id
+    WHERE g.`status` = 1 AND p.status = 1 AND g.`prod_id` = #{prodId}
+  </select>
+  <select id="getMainProdPage" resultType="com.yami.shop.bean.model.Product">
+    SELECT p.prod_id,p.pic,p.price,pe.stock as total_stocks,pl.prod_name FROM tz_prod p
+    LEFT JOIN tz_prod_lang pl ON p.prod_id = pl.prod_id AND pl.lang = #{lang}
+    LEFT JOIN tz_prod_extension pe ON p.prod_id = pe.prod_id
+    WHERE p.prod_id NOT IN
+    (
+        SELECT prod_id FROM tz_giveaway WHERE `status` = 1
+        <if test="giveawayProd.giveawayId != null">
+            AND giveaway_id != #{giveawayProd.giveawayId}
+        </if>
+    )
+    AND p.mold = 0 AND p.status = 1 AND p.shop_id = #{giveawayProd.shopId} AND p.prod_type != 5
+    <if test="giveawayProd.prodName != null and giveawayProd.prodName != ''">
+        AND pl.prod_name LIKE CONCAT("%", #{giveawayProd.prodName} ,"%")
+    </if>
+    <if test="giveawayProd.shopCategoryId != null">
+        AND p.shop_category_id = #{giveawayProd.shopCategoryId}
+    </if>
+</select>
+</mapper>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yami.shop.combo.multishop.dao.GiveawayMapper">
+
+  <resultMap id="giveawayMap" type="com.yami.shop.bean.model.Giveaway">
+    <id column="giveaway_id" property="giveawayId" />
+    <result column="name" property="name"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_time" property="updateTime"/>
+    <result column="start_time" property="startTime"/>
+    <result column="end_time" property="endTime"/>
+    <result column="shop_id" property="shopId"/>
+    <result column="prod_id" property="prodId"/>
+    <result column="buy_num" property="buyNum"/>
+    <result column="status" property="status"/>
+  </resultMap>
+
+  <select id="pageByParam" resultType="com.yami.shop.bean.model.Giveaway">
+    select g.*, p.pic, ifnull(pl.prod_name,p.prod_name) as prodName
+    from tz_giveaway g
+    <if test="giveaway.giveawayProdName != null and giveaway.giveawayProdName != ''">
+      join tz_giveaway_prod tgp on tgp.giveaway_id = g.giveaway_id
+      join tz_prod gp on tgp.prod_id = gp.prod_id
+      left join tz_prod_lang gpl on gp.prod_id = gpl.prod_id and gpl.lang = #{lang}
+    </if>
+    join tz_prod p on g.prod_id = p.prod_id
+    left join tz_prod_lang pl on p.prod_id = pl.prod_id and pl.lang = #{lang}
+    <where>
+      <if test="giveaway.shopId != null">
+        and g.shop_id = #{giveaway.shopId}
+      </if>
+      <if test="giveaway.name != null and giveaway.name != ''">
+        and g.name like concat('%',#{giveaway.name},'%')
+      </if>
+      <if test="giveaway.status != null">
+        and g.status = #{giveaway.status}
+      </if>
+      <if test="giveaway.prodName != null and giveaway.prodName != ''">
+        and ifnull(pl.prod_name,p.prod_name) like concat('%',#{giveaway.prodName},'%')
+      </if>
+      <if test="giveaway.giveawayProdName != null and giveaway.giveawayProdName != ''">
+        and ifnull(gpl.prod_name,gp.prod_name) like concat('%',#{giveaway.giveawayProdName},'%')
+      </if>
+      and g.status > -1
+    </where>
+    GROUP BY g.`giveaway_id`
+    order by g.giveaway_id desc
+  </select>
+  <select id="getInfoById" resultType="com.yami.shop.bean.model.Giveaway">
+    select g.*, p.price, p.pic, ifnull(pl.prod_name,p.prod_name) as prodName
+    from tz_giveaway g
+    join tz_prod p on g.prod_id = p.prod_id
+    left join tz_prod_lang pl on p.prod_id = pl.prod_id and pl.lang = #{lang}
+    where g.giveaway_id = #{giveawayId}
+  </select>
+  <select id="listMainProdIdByGiveawayProdId" resultType="java.lang.Long">
+    SELECT prod_id FROM `tz_giveaway` WHERE `status` = 1 AND giveaway_id IN (SELECT giveaway_id FROM `tz_giveaway_prod` WHERE `status` = 1 AND prod_id = #{prodId})
+  </select>
+  <select id="countNormalGiveaway" resultType="int">
+    SELECT IFNULL(COUNT(giveaway_id),0)
+    FROM tz_giveaway
+    WHERE status = 1 AND giveaway_id IN
+    <foreach collection="giveawayIds" item="giveawayId" separator="," open="(" close=")">
+      #{giveawayId}
+    </foreach>
+  </select>
+</mapper>

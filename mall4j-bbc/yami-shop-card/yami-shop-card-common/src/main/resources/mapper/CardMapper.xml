@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yami.shop.card.common.dao.CardMapper">
+    <update id="deleteUserCardByCardId">
+        UPDATE tz_card_user cu SET cu.is_delete =1 WHERE cu.user_id =#{userId} AND cu.card_id = #{cardId}
+    </update>
+
+
+    <select id="getPlatformPage" resultType="com.yami.shop.card.common.model.Card">
+        SELECT tz_card.* FROM tz_card
+        ${ew.customSqlSegment}
+    </select>
+
+    <select id="getPlatformBatchPage" resultType="com.yami.shop.card.common.model.Card">
+        SELECT
+            tc.card_title,tc.card_type,tc.batch_status,tc.batch_time,tc.user_start_time,
+            tc.user_end_time,tc.batch_number,tc.card_prefix,
+            count( tc.card_id ) AS cardNum,
+            SUM( if(tc.status = 2 or tc.status = 3,1,0)) AS soldNum,
+            SUM( tc.balance ) AS totalAmount
+        FROM
+        ( SELECT tz_card.* FROM tz_card
+        <where>
+            <if test="card.shopId != null">
+                and shop_id=#{card.shopId}
+            </if>
+            <if test="card.batchNumber != null and card.batchNumber !=''">
+                and batch_number=#{card.batchNumber}
+            </if>
+            <if test="card.batchStatus != null">
+                and batch_status=#{card.batchStatus}
+            </if>
+            <if test="card.cardType != null">
+                and card_type=#{card.cardType}
+            </if>
+            <if test="card.cardTitle!= null and card.cardTitle!=''">
+                and trim(replace(card_title,' ','')) like trim(replace(concat('%',#{card.cardTitle},'%'),' ',''))
+            </if>
+            <if test="card.cardPrefix != null and card.cardPrefix !=''">
+                and card_prefix=#{card.cardPrefix}
+            </if>
+            <if test="card.startTime !=null">
+                and batch_time &gt;=#{card.startTime}
+            </if>
+            <if test="card.endTime !=null">
+                and batch_time &lt;=#{card.endTime}
+            </if>
+            and batch_number is not null
+            and is_delete = 0
+        </where>
+        ORDER BY batch_status asc limit  1000000 ) tc
+        GROUP BY
+        tc.batch_number
+        ORDER BY
+        tc.create_time desc,tc.batch_status asc
+    </select>
+
+    <select id="getCardUserInfo" resultType="com.yami.shop.card.common.dto.CardDto">
+        SELECT tc.card_id,tc.card_title,tc.shop_id,tc.card_type,tc.status,tc.suitable_prod_type,tcu.*,sd.shop_name,tc.buy_card_type
+        FROM tz_card_user tcu
+                 INNER JOIN tz_card tc ON tcu.`card_id` = tc.`card_id`
+                 LEFT JOIN tz_shop_detail sd ON tc.`shop_id` = sd.shop_id
+        WHERE tcu.card_user_id = #{cardUserId}
+    </select>
+    <select id="queryBatchNumList" resultType="java.lang.String">
+        select batch_number from tz_card where shop_id = #{shopId} and is_delete = 0
+         and batch_number IS NOT NULL GROUP BY batch_number
+    </select>
+
+    <update id="updateBatchByCardCode">
+        update tz_card SET status=1
+        WHERE is_delete=0
+        AND card_code in
+        <foreach collection="readData" open="(" index="index" item="item" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="makeCardByNumAndBatchNumber">
+        update tz_card SET status = 1,batch_status = 1
+        WHERE status = 0 and shop_id = #{shopId}
+        and batch_number in
+        <foreach collection="batchNumbers" item="batchNumber" separator="," open="(" close=")">
+            #{batchNumber}
+        </foreach>
+    </update>
+
+    <update id="sellCardByNumAndBatchNumber">
+        update tz_card SET status = 2,batch_status = 2,buy_unit = #{buyUnit},
+        balance = #{balance},sell_time = now(),buy_reason = #{buyReason}
+        WHERE status = 1 and shop_id = #{shopId} and card_number = #{number}
+        and batch_number = #{batchNumber}
+    </update>
+
+    <update id="rechargeCardByNumAndBatchNumber">
+        update tz_card SET balance = #{balance}
+        WHERE shop_id = #{shopId} and (batch_status = 0 or batch_status = 1) and card_number = #{number}
+        and batch_number = #{batchNumber}
+    </update>
+
+    <update id="freezeCardByNumAndBatchNumber">
+        update tz_card SET status = 4
+        WHERE shop_id = #{shopId} and card_number = #{number}
+        and batch_number = #{batchNumber}
+    </update>
+
+    <update id="soldToUnsoldCardByNumAndBatchNumber">
+        update tz_card SET status = 1,batch_status = 1,buy_unit = null
+        WHERE shop_id = #{shopId} and card_number = #{number}
+        and batch_number = #{batchNumber}
+    </update>
+
+    <delete id="delBatchCard">
+        update tz_card SET is_delete = 1 where (status = 0 or status = 1) and batch_number = #{batchNumber} and shop_id = #{shopId}
+    </delete>
+
+    <update id="freezeCardByCardIds">
+        update tz_card SET status = 4
+        WHERE shop_id = #{shopId}
+        and card_id in
+        <foreach collection="cardIds" item="cardId" separator="," open="(" close=")">
+            #{cardId}
+        </foreach>
+    </update>
+
+    <update id="updateCardBybatchNumber">
+        update tz_card SET card_title = #{card.cardTitle},card_type = #{card.cardType},
+        user_start_time = #{card.userStartTime},user_end_time = #{card.userEndTime}
+        WHERE shop_id = #{card.shopId} and batch_number = #{card.batchNumber}
+    </update>
+
+    <select id="queryCardSellRecord" resultType="com.yami.shop.card.common.model.Card">
+        SELECT tz_card.card_title,tz_card.balance,tz_card.card_id,tz_card.card_type,tz_card.buy_unit,tz_card.status,tz_card.batch_time,tz_card.user_start_time,
+            tz_card.user_end_time,count( card_id ) AS cardNum,
+            CONCAT(min(card_number),"~",max(card_number)) as sellRecordNum,
+            SUM( balance ) AS totalAmount FROM tz_card where
+            batch_number = #{batchNumber}
+            and is_delete = 0
+		GROUP BY buy_unit,status
+        ORDER BY status asc
+    </select>
+
+    <select id="getMinNotSoldCardNumber" resultType="com.yami.shop.card.common.model.Card">
+        SELECT * FROM tz_card WHERE batch_number = #{batchNumber} AND status = 1 ORDER BY card_number ASC LIMIT 1
+    </select>
+
+    <select id="getSellCardNum" resultType="java.lang.Integer">
+        SELECT count(card_id) FROM tz_card WHERE batch_number = #{batchNumber} AND status = 1 and card_number BETWEEN #{startNumber} and #{endNumber}
+    </select>
+
+    <select id="getCardNumByNumber" resultType="java.lang.Integer">
+        SELECT count(card_id) FROM tz_card WHERE batch_number = #{batchNumber} AND card_number BETWEEN #{startNumber} and #{endNumber}
+    </select>
+
+    <select id="getCardInfoByCardCode" resultType="com.yami.shop.card.common.model.Card">
+        SELECT * FROM tz_card WHERE card_code = #{cardCode} AND is_delete = 0
+    </select>
+
+    <select id="batchCardDetailsPage" resultType="com.yami.shop.card.common.model.Card">
+        SELECT tz_card.batch_number,tz_card.card_title,tz_card.balance,tz_card.card_id,
+        tz_card.card_type,tz_card.buy_unit,tz_card.status,tz_card.batch_time,tz_card.user_start_time,
+        tz_card.user_end_time,count( card_id ) AS cardNum,
+        CONCAT(min(card_number),"~",max(card_number)) as sellRecordNum,
+        SUM( balance ) AS totalAmount FROM tz_card
+        <where>
+            <if test="card.batchNumber != null and card.batchNumber !=''">
+                and batch_number=#{card.batchNumber}
+            </if>
+            <if test="card.cardType != null">
+                and card_type=#{card.cardType}
+            </if>
+            <if test="card.startTime !=null">
+                and batch_time &gt;=#{card.startTime}
+            </if>
+            <if test="card.endTime !=null">
+                and batch_time &lt;=#{card.endTime}
+            </if>
+            <if test="card.status !=null">
+                and status =#{card.status}
+            </if>
+            <if test="card.cardPrefix !=null and card.cardPrefix !=''">
+                and card_prefix = #{card.cardPrefix}
+            </if>
+            and batch_number is not null
+            and status != 0 and status != 1
+        </where>
+        and is_delete = 0
+        GROUP BY batch_number,buy_unit,status
+        ORDER BY status asc
+    </select>
+
+    <select id="batchInfoStatistic" resultType="com.yami.shop.card.common.model.Card">
+        SELECT sum(tz_card.balance) as cardTotalAmount,count(tz_card.card_id) as cardCount
+        FROM tz_card
+        <where>
+            <if test="card.batchNumber != null and card.batchNumber != ''">
+                AND tz_card.batch_number = #{card.batchNumber}
+            </if>
+            <if test="card.cardType != null">
+                AND tz_card.card_type = #{card.cardType}
+            </if>
+            <if test="card.status != null">
+                AND tz_card.status = #{card.status}
+            </if>
+            <if test="card.endTime != null">
+                AND tz_card.batch_time &lt;= #{card.endTime}
+            </if>
+            <if test="card.startTime != null">
+                AND tz_card.batch_time &gt;= #{card.startTime}
+            </if>
+            <if test="card.cardPrefix !=null and card.cardPrefix !=''">
+                and card_prefix = #{card.cardPrefix}
+            </if>
+            and batch_number is not null
+            and status != 0 and status != 1
+        </where>
+    </select>
+
+    <select id="getBuyCardMaxInfo" resultType="com.yami.shop.card.common.model.Card">
+        select * from tz_card WHERE card_id = (SELECT MAX(card_id) FROM `tz_card` WHERE card_prefix = 'BUY')
+    </select>
+
+    <update id="changeCardStatus">
+        update tz_card set status = -1 where date_add(user_end_time, interval 1 day) &lt; #{now}
+    </update>
+</mapper>

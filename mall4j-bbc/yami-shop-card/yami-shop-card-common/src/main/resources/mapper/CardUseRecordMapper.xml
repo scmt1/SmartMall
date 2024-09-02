@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yami.shop.card.common.dao.CardUseRecordMapper">
+    <select id="getCardUseRecordList" resultType="com.yami.shop.card.common.model.CardUseRecord">
+        SELECT use_time,amount,tz_shop_detail.shop_name FROM tz_card_use_record
+        join tz_shop_detail on write_off_shop_id = tz_shop_detail.shop_id
+        where  tz_card_use_record.card_code = #{cardNumber}
+        ORDER BY use_time desc
+    </select>
+
+    <select id="queryWriteOffCardList" resultType="com.yami.shop.card.common.model.CardUseRecord">
+        SELECT tz_card_use_record.* ,tz_card.card_type,tz_card_user.card_number, tz_card.buy_card_type,
+        tz_shop_detail.shop_name, tz_user.nick_name, tz_user.user_mobile ,tz_card.card_title,
+        tz_shop_employee.nickname as employeeNickName
+        FROM tz_card_use_record
+        join tz_shop_detail on write_off_shop_id = tz_shop_detail.shop_id
+        left join tz_card_user on tz_card_user.card_user_id = tz_card_use_record.card_user_id
+        left join tz_user ON tz_user.user_id = tz_card_use_record.user_id
+        left join tz_card ON tz_card.card_code = tz_card_use_record.card_code
+        left join tz_shop_employee ON tz_shop_employee.employee_id = tz_card_use_record.write_off_person_id
+        <where>
+            <if test="cardUseRecord.writeOffShopIds != null and cardUseRecord.writeOffShopIds.size() > 0">
+                AND tz_card_use_record.write_off_shop_id in
+                <foreach collection="cardUseRecord.writeOffShopIds" item="writeOffShopId" separator="," open="(" close=")">
+                    #{writeOffShopId}
+                </foreach>
+            </if>
+            <if test="cardUseRecord.writeOffPersonId != null">
+                AND tz_card_use_record.write_off_person_id = #{cardUseRecord.writeOffPersonId}
+            </if>
+            <if test="cardUseRecord.settlement != null">
+                AND tz_card_use_record.settlement = #{cardUseRecord.settlement}
+            </if>
+            <if test="cardUseRecord.cardType != null">
+                AND tz_card.card_type = #{cardUseRecord.cardType}
+            </if>
+            <if test="cardUseRecord.userMobile != null and cardUseRecord.userMobile != ''">
+                AND tz_user.user_mobile = #{cardUseRecord.userMobile}
+            </if>
+            <if test="cardUseRecord.buyCardType != null">
+                AND tz_card.buy_card_type = #{cardUseRecord.buyCardType}
+            </if>
+            <if test="cardUseRecord.cardShopId != null">
+                AND tz_card.shop_id = #{cardUseRecord.cardShopId}
+            </if>
+            <if test="cardUseRecord.cardCode != null and cardUseRecord.cardCode != ''">
+                AND tz_card_use_record.card_code = #{cardUseRecord.cardCode}
+            </if>
+            <if test="cardUseRecord.orderNumber != null and cardUseRecord.orderNumber != ''">
+                AND tz_card_use_record.order_number LIKE CONCAT('%',#{cardUseRecord.orderNumber},'%')
+            </if>
+            <if test="cardUseRecord.startTime != null and cardUseRecord.endTime != null">
+                AND (tz_card_use_record.use_time <![CDATA[ >= ]]> #{cardUseRecord.startTime} AND tz_card_use_record.use_time <![CDATA[ <= ]]> #{cardUseRecord.endTime})
+            </if>
+        </where>
+        ORDER BY use_time DESC
+    </select>
+
+    <select id="downloadWriteOffCardList" resultType="com.yami.shop.card.common.model.CardUseRecord">
+        SELECT tz_card_use_record.* ,tz_card_user.card_number, tz_shop_detail.shop_name,
+        tz_user.nick_name, tz_user.user_mobile ,tz_card.card_title ,tz_card.buy_card_type,
+        tz_shop_employee.nickname as employeeNickName
+        FROM tz_card_use_record
+        LEFT JOIN tz_shop_detail on tz_card_use_record.write_off_shop_id = tz_shop_detail.shop_id
+        LEFT JOIN tz_card_user on tz_card_user.card_user_id = tz_card_use_record.card_user_id
+        LEFT JOIN tz_user ON tz_user.user_id = tz_card_use_record.user_id
+        LEFT JOIN tz_card ON tz_card.card_code = tz_card_use_record.card_code
+        LEFT JOIN tz_shop_employee ON tz_shop_employee.employee_id = tz_card_use_record.write_off_person_id
+        <where>
+            <if test="cardUseRecord.writeOffShopIds != null and cardUseRecord.writeOffShopIds.size() > 0">
+                AND tz_card_use_record.write_off_shop_id in
+                <foreach collection="cardUseRecord.writeOffShopIds" item="writeOffShopId" separator="," open="(" close=")">
+                    #{writeOffShopId}
+                </foreach>
+            </if>
+            <if test="cardUseRecord.writeOffPersonId != null">
+                AND tz_card_use_record.write_off_person_id = #{cardUseRecord.writeOffPersonId}
+            </if>
+            <if test="cardUseRecord.settlement != null">
+                AND tz_card_use_record.settlement = #{cardUseRecord.settlement}
+            </if>
+            <if test="cardUseRecord.userMobile != null and cardUseRecord.userMobile != ''">
+                AND tz_user.user_mobile = #{cardUseRecord.userMobile}
+            </if>
+            <if test="cardUseRecord.cardType != null">
+                AND tz_card.card_type = #{cardUseRecord.cardType}
+            </if>
+            <if test="cardUseRecord.buyCardType != null">
+                AND tz_card.buy_card_type = #{cardUseRecord.buyCardType}
+            </if>
+            <if test="cardUseRecord.cardShopId != null">
+                AND tz_card.shop_id = #{cardUseRecord.cardShopId}
+            </if>
+            <if test="cardUseRecord.cardCode != null and cardUseRecord.cardCode != ''">
+                AND tz_card_use_record.card_code = #{cardUseRecord.cardCode}
+            </if>
+            <if test="cardUseRecord.orderNumber != null and cardUseRecord.orderNumber != ''">
+                AND tz_card_use_record.order_number LIKE CONCAT('%',#{cardUseRecord.orderNumber},'%')
+            </if>
+            <if test="cardUseRecord.startTime != null and cardUseRecord.endTime != null">
+                AND (tz_card_use_record.use_time <![CDATA[ >= ]]> #{cardUseRecord.startTime} AND tz_card_use_record.use_time <![CDATA[ <= ]]> #{cardUseRecord.endTime})
+            </if>
+        </where>
+        ORDER BY use_time DESC
+    </select>
+
+    <select id="queryCardUseTotalBalance" resultType="com.yami.shop.card.common.model.CardUseRecord">
+        SELECT IFNULL(SUM(amount), 0) AS amount FROM tz_card_use_record WHERE card_code = #{cardCode}
+    </select>
+
+    <select id="statisticCardUseRecord" resultType="com.yami.shop.card.common.model.CardUseRecord">
+        SELECT sum(cur.amount) as actualAmount,count(cur.card_use_record_id) as writeOffCount,
+        SUM(IF(DATE_FORMAT(cur.use_time,'%Y-%m-%d') = date_sub(curdate(),interval 1 day),cur.amount,0)) AS yesterdayAmount,
+        SUM(CASE WHEN DATE_FORMAT(cur.use_time,'%Y-%m-%d') = date_sub(curdate(),interval 1 day)  THEN 1 ELSE 0 END) AS yesterdayCount,
+        SUM(IF(DATE_FORMAT(cur.use_time,'%Y-%m-%d') = curdate(),cur.amount,0)) AS toDayAmount,
+        SUM(CASE WHEN DATE_FORMAT(cur.use_time,'%Y-%m-%d') = curdate()  THEN 1 ELSE 0 END) AS toDayCount
+        FROM tz_card_use_record cur
+        LEFT JOIN tz_shop_detail sd ON cur.`write_off_shop_id` = sd.`shop_id`
+        LEFT JOIN tz_user ON tz_user.user_id = cur.user_id
+        LEFT JOIN tz_card ON tz_card.card_code = cur.card_code
+        <where>
+            <if test="cardUseRecord.writeOffShopIds != null and cardUseRecord.writeOffShopIds.size() > 0">
+                AND cur.write_off_shop_id in
+                <foreach collection="cardUseRecord.writeOffShopIds" item="writeOffShopId" separator="," open="(" close=")">
+                    #{writeOffShopId}
+                </foreach>
+            </if>
+            <if test="cardUseRecord.writeOffPersonId != null">
+                AND cur.write_off_person_id = #{cardUseRecord.writeOffPersonId}
+            </if>
+            <if test="cardUseRecord.cardShopId != null">
+                AND tz_card.shop_id = #{cardUseRecord.cardShopId}
+            </if>
+            <if test="cardUseRecord.settlement != null">
+                AND cur.settlement = #{cardUseRecord.settlement}
+            </if>
+            <if test="cardUseRecord.cardType != null">
+                AND tz_card.card_type = #{cardUseRecord.cardType}
+            </if>
+            <if test="cardUseRecord.cardCode != null and cardUseRecord.cardCode != ''">
+                AND cur.card_code = #{cardUseRecord.cardCode}
+            </if>
+            <if test="cardUseRecord.buyCardType != null">
+                AND tz_card.buy_card_type = #{cardUseRecord.buyCardType}
+            </if>
+            <if test="cardUseRecord.endTime != null">
+                AND cur.use_time &lt;= #{cardUseRecord.endTime}
+            </if>
+            <if test="cardUseRecord.startTime != null">
+                AND cur.use_time &gt;= #{cardUseRecord.startTime}
+            </if>
+            <if test="cardUseRecord.userMobile != null and cardUseRecord.userMobile != ''">
+                AND tz_user.user_mobile = #{cardUseRecord.userMobile}
+            </if>
+        </where>
+    </select>
+
+    <select id="writeOffDetailStatistic" resultType="com.yami.shop.card.common.model.CardUseRecord">
+        select count(tz_card_use_record.card_use_record_id) as write_off_num,tz_shop_detail.shop_name,
+        SUM(tz_card_use_record.amount) as write_off_total_amount,
+        tz_card_use_record.write_off_shop_id from tz_card_use_record
+        left JOIN tz_shop_detail on tz_card_use_record.write_off_shop_id = tz_shop_detail.shop_id
+        left JOIN tz_card on tz_card.card_code = tz_card_use_record.card_code
+        <where>
+            <if test="cardUseRecord.startTime!=null and cardUseRecord.endTime!=null">
+                and tz_card_use_record.use_time between #{cardUseRecord.startTime} and #{cardUseRecord.endTime}
+            </if>
+            <if test="cardUseRecord.cardType != null">
+                AND tz_card.card_type = #{cardUseRecord.cardType}
+            </if>
+            <if test="cardUseRecord.buyCardType != null">
+                AND tz_card.buy_card_type = #{cardUseRecord.buyCardType}
+            </if>
+        </where>
+        GROUP BY tz_card_use_record.write_off_shop_id ORDER BY write_off_num desc
+    </select>
+
+    <select id="shopWriteOffDetail" resultType="com.yami.shop.card.common.model.CardUseRecord">
+        SELECT
+        tz_card_use_record.*,tz_shop_detail.shop_name,
+        tz_card.card_title,tz_card.card_type,tz_card.buy_card_type,
+        tz_user.nick_name, tz_user.user_mobile
+        FROM tz_card_use_record
+        left JOIN tz_card on tz_card.card_code = tz_card_use_record.card_code
+        LEFT JOIN tz_user ON tz_user.user_id = tz_card_use_record.user_id
+        left JOIN tz_shop_detail on tz_card_use_record.write_off_shop_id = tz_shop_detail.shop_id
+        <where>
+            <if test="cardUseRecord.startTime!=null and cardUseRecord.endTime!=null">
+                and tz_card_use_record.use_time between #{cardUseRecord.startTime} and #{cardUseRecord.endTime}
+            </if>
+            <if test="cardUseRecord.cardType != null">
+                AND tz_card.card_type = #{cardUseRecord.cardType}
+            </if>
+            <if test="cardUseRecord.buyCardType != null">
+                AND tz_card.buy_card_type = #{cardUseRecord.buyCardType}
+            </if>
+            <if test="cardUseRecord.writeOffShopId != null">
+                AND tz_card_use_record.write_off_shop_id = #{cardUseRecord.writeOffShopId}
+            </if>
+        </where>
+        ORDER BY tz_card_use_record.use_time DESC
+    </select>
+
+    <select id="getWriteOffDetail" resultType="com.yami.shop.card.common.model.CardUseRecord">
+        SELECT tz_card_use_record.* ,tz_card_user.card_number, tz_shop_detail.shop_name,
+        tz_user.nick_name, tz_user.user_mobile ,tz_card.card_title ,tz_card.buy_card_type
+        FROM tz_card_use_record
+        join tz_shop_detail on write_off_shop_id = tz_shop_detail.shop_id
+        left join tz_card_user on tz_card_user.card_user_id = tz_card_use_record.card_user_id
+        left join tz_user ON tz_user.user_id = tz_card_use_record.user_id
+        left join tz_card ON tz_card.card_code = tz_card_use_record.card_code
+        <where>
+            <if test="cardUseRecord.writeOffShopId != null">
+                AND tz_card_use_record.write_off_shop_id = #{cardUseRecord.writeOffShopId}
+            </if>
+            <if test="cardUseRecord.startTime!=null and cardUseRecord.endTime!=null">
+                and tz_card_use_record.use_time between #{cardUseRecord.startTime} and #{cardUseRecord.endTime}
+            </if>
+            <if test="cardUseRecord.cardType != null">
+                AND tz_card.card_type = #{cardUseRecord.cardType}
+            </if>
+            <if test="cardUseRecord.buyCardType != null">
+                AND tz_card.buy_card_type = #{cardUseRecord.buyCardType}
+            </if>
+            <if test="cardUseRecord.writeOffShopId != null">
+                AND tz_card_use_record.write_off_shop_id = #{cardUseRecord.writeOffShopId}
+            </if>
+        </where>
+        ORDER BY use_time DESC
+    </select>
+
+    <update id="updateCardUseRecordSettlementStatusByIds">
+        update tz_card_use_record SET settlement = 1
+        WHERE card_use_record_id in
+        <foreach collection="cardUseRecordIds" item="cardUseRecordId" separator="," open="(" close=")">
+            #{cardUseRecordId}
+        </foreach>
+    </update>
+</mapper>

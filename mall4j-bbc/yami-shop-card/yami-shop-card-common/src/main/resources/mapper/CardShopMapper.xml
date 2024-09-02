@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yami.shop.card.common.dao.CardShopMapper">
+
+
+    <select id="queryCardShopList" resultType="com.yami.shop.card.common.model.CardShop">
+        SELECT tcs.shop_id, tsd.shop_logo, tsd.shop_name ,tsd.industry_type ,tsd.shop_status ,tsr.renovation_id
+        FROM tz_card_shop tcs JOIN tz_shop_detail  tsd on tsd.shop_id = tcs.shop_id
+        LEFT JOIN tz_shop_renovation tsr on tsd.shop_id = tsr.shop_id
+        WHERE tcs.card_id = #{cardId} and tsd.shop_status = 1 GROUP BY tcs.shop_id
+    </select>
+
+    <select id="getConfigNoUseCardShopList" resultType="com.yami.shop.card.common.model.CardShop">
+        SELECT tsd.shop_id, tsd.shop_logo, tsd.shop_name ,tsd.industry_type ,tsd.shop_status ,tsr.renovation_id
+        FROM tz_shop_detail tsd
+        LEFT JOIN tz_shop_renovation tsr on tsd.shop_id = tsr.shop_id
+        where tsd.shop_status = 1
+        AND tsd.shop_id in
+        <foreach collection="shopIds" item="shopId" open="(" close=")" separator=",">
+            #{shopId}
+        </foreach>
+        GROUP BY tsd.shop_id
+    </select>
+
+    <select id="getNoUseCardShopList" resultType="com.yami.shop.card.common.model.CardShop">
+        SELECT tsd.shop_id, tsd.shop_logo, tsd.shop_name ,tsd.industry_type ,tsd.shop_status ,tsr.renovation_id
+        FROM tz_shop_detail tsd
+        LEFT JOIN tz_shop_renovation tsr on tsd.shop_id = tsr.shop_id
+        where tsd.shop_status = 1
+        AND tsd.shop_id not in
+        <foreach collection="shopIds" item="shopId" open="(" close=")" separator=",">
+            #{shopId}
+        </foreach>
+        GROUP BY tsd.shop_id
+    </select>
+
+</mapper>

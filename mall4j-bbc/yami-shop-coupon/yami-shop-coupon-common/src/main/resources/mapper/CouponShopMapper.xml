@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yami.shop.coupon.common.dao.CouponShopMapper">
+
+    <resultMap id="BaseResultMap" type="com.yami.shop.coupon.common.model.CouponShop">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="coupon_shop_id" jdbcType="BIGINT" property="couponShopId"/>
+        <result column="coupon_id" jdbcType="BIGINT" property="couponId"/>
+        <result column="shop_id" jdbcType="BIGINT" property="shopId"/>
+    </resultMap>
+
+
+    <delete id="deleteCouponShopsByCouponId">
+    delete from tz_coupon_shop where coupon_id = #{couponId}
+  </delete>
+
+    <insert id="insertCouponShopsBatch">
+        insert into tz_coupon_shop (coupon_id, shop_id,create_time) values
+        <foreach collection="shopIds" item="shopId" separator=",">
+            (#{couponId}, #{shopId},now())
+        </foreach>
+    </insert>
+
+    <delete id="deleteCouponShopsByCouponIds">
+        DELETE FROM tz_coupon_shop
+        WHERE coupon_id IN
+        <foreach collection="couponIds" item="couponId" separator="," open="(" close=")">
+            #{couponId}
+        </foreach>
+    </delete>
+
+    <select id="getShopIdByCouponId" resultType="long">
+        select shop_id from tz_coupon_shop where coupon_id = #{couponId}
+    </select>
+</mapper>

@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yami.shop.combo.multishop.dao.ComboMapper">
+
+  <resultMap id="comboMap" type="com.yami.shop.combo.multishop.model.Combo">
+    <id column="combo_id" property="comboId" />
+    <result column="name" property="name"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_time" property="updateTime"/>
+    <result column="start_time" property="startTime"/>
+    <result column="end_time" property="endTime"/>
+    <result column="status" property="status"/>
+    <result column="sold_num" property="soldNum"/>
+    <result column="price" property="price"/>
+    <result column="main_prod_id" property="mainProdId"/>
+    <result column="shop_id" property="shopId"/>
+  </resultMap>
+
+  <resultMap id="comboWithProdMap" type="com.yami.shop.combo.multishop.model.Combo">
+    <id column="combo_id" property="comboId" />
+    <result column="name" property="name"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_time" property="updateTime"/>
+    <result column="start_time" property="startTime"/>
+    <result column="end_time" property="endTime"/>
+    <result column="status" property="status"/>
+    <result column="sold_num" property="soldNum"/>
+    <result column="price" property="price"/>
+    <result column="main_prod_id" property="mainProdId"/>
+    <result column="shop_id" property="shopId"/>
+    <collection property="matchingProds" javaType="list" ofType="com.yami.shop.combo.multishop.model.ComboProd">
+      <id column="m_combo_prod_id" property="comboProdId" />
+      <result column="m_combo_id" property="comboId"/>
+      <result column="m_prod_id" property="prodId"/>
+      <result column="m_type" property="type"/>
+      <result column="m_least_num" property="leastNum"/>
+      <result column="m_status" property="status"/>
+      <result column="m_required" property="required"/>
+    </collection>
+  </resultMap>
+
+  <resultMap id="comboVOMap" type="com.yami.shop.bean.vo.ComboVO">
+    <id column="combo_id" property="comboId"/>
+    <result column="name" property="name"/>
+    <result column="status" property="status"/>
+    <result column="start_time" property="startTime"/>
+    <result column="end_time" property="endTime"/>
+    <collection property="matchingProds" javaType="list" ofType="com.yami.shop.bean.vo.ComboProdVO">
+      <id column="s_combo_prod_id" property="comboProdId"/>
+      <result column="s_prod_id" property="prodId"/>
+      <result column="s_type" property="type"/>
+      <result column="s_least_num" property="leastNum"/>
+      <result column="s_status" property="status"/>
+      <result column="s_required" property="required"/>
+      <result column="s_pic" property="pic"/>
+      <result column="s_prod_status" property="prodStatus"/>
+      <result column="s_prod_name" property="prodName"/>
+        <result column="s_combo_price" property="comboPrice"/>
+      <collection property="skuList" ofType="com.yami.shop.bean.vo.ComboProdSkuVO">
+        <id column="s_sku_id" property="skuId"/>
+        <result column="s_matching_price" property="matchingPrice"/>
+      </collection>
+    </collection>
+  </resultMap>
+
+  <select id="getComboWithProdInfoById" resultMap="comboWithProdMap">
+    select c.*,
+           mcp.combo_prod_id as m_combo_prod_id,
+           mcp.combo_id as m_combo_id,
+           mcp.prod_id as m_prod_id,
+           mcp.type as m_type,
+           mcp.least_num as m_least_num,
+           mcp.status as m_status,
+           mcp.required as m_required
+    from tz_combo c
+    join tz_combo_prod mcp on c.combo_id = mcp.combo_id and mcp.status = c.status
+    where c.combo_id = #{comboId}
+  </select>
+  <select id="pageByParam" resultType="com.yami.shop.combo.multishop.model.Combo">
+      select tc.*,count(tcp.combo_prod_id) as prod_count,
+      tp.prod_name as main_prod_name,tp.pic as main_prod_pic
+      from tz_combo tc
+      LEFT  JOIN tz_prod tp ON tc.main_prod_id = tp.prod_id
+      JOIN tz_combo_prod tcp ON tc.combo_id = tcp.combo_id AND tcp.status > -1
+      <where>
+          <if test="combo.shopId != null">
+              and tc.shop_id = #{combo.shopId}
+          </if>
+          <if test="combo.name != null and combo.name != ''">
+              and tc.name like concat('%',#{combo.name},'%')
+          </if>
+          <if test="combo.status != null">
+              and tc.status = #{combo.status}
+          </if>
+          <if test="combo.mainProdIdList != null">
+              and tc.main_prod_id in
+              <foreach collection="combo.mainProdIdList" item="mainProdIdList" open="(" separator="," close=")">
+                  #{mainProdIdList}
+              </foreach>
+          </if>
+          <if test="combo.matchProdIdList != null">
+              and tc.main_prod_id in (
+              SELECT
+              tc.main_prod_id
+              FROM
+              tz_combo tc
+              LEFT JOIN tz_combo_prod tcp ON tc.combo_id = tcp.combo_id
+              WHERE
+              tcp.prod_id IN
+              <foreach collection="combo.matchProdIdList" item="matchProdIdList" open="(" separator="," close=")">
+                  #{matchProdIdList}
+              </foreach>
+              AND tcp.`status` > - 1 )
+          </if>
+          AND tc.`status` > -1
+      </where>
+      group by tc.combo_id
+      order by tc.combo_id desc
+  </select>
+  <select id="listComboByProdId" resultMap="comboVOMap">
+    select c.`combo_id`,c.`name`,c.`status`,c.`price`,c.`start_time`,c.`end_time`,scp.combo_price as s_combo_price,
+           scp.`combo_prod_id` as s_combo_prod_id,
+           scp.`prod_id` as s_prod_id,
+           scp.`type` as s_type,
+           scp.`least_num` as s_least_num,
+           scp.`status` as s_status,
+           scp.`required` as s_required,
+           p.pic as s_pic,
+           p.status as s_prod_status,
+           pl.prod_name as s_prod_name
+    from tz_combo c
+    join tz_combo_prod scp on c.combo_id = scp.combo_id and scp.status = c.status
+    left join tz_prod p ON p.prod_id = scp.prod_id
+    left join tz_prod_lang pl ON pl.prod_id = p.prod_id AND pl.lang = #{lang}
+    where c.combo_id in (SELECT combo_id FROM `tz_combo_prod` WHERE `type` = 1 AND `prod_id` = #{prodId} AND `status` = 1)
+    and c.`status` = 1
+  </select>
+
+  <select id="getComboInfoByComboId" resultMap="comboVOMap">
+    SELECT c.`combo_id`,c.`name`,c.`status`,c.`price`,
+       scp.`combo_prod_id` AS s_combo_prod_id,
+       scp.`combo_price` AS s_combo_price,
+       scp.`prod_id` AS s_prod_id,
+       scp.`type` AS s_type,
+       scp.`least_num` AS s_least_num,
+       scp.`status` AS s_status,
+       scp.`required` AS s_required,
+       scp.`sku_id` as s_sku_id,
+       scp.`matching_price` as s_matching_price
+    FROM tz_combo c
+    JOIN (
+        SELECT cp.combo_prod_id,cp.combo_id,cp.prod_id,cp.type,cp.least_num,cp.status,cp.required,cp.combo_price,cps.sku_id,cps.matching_price
+        FROM tz_combo_prod cp
+        JOIN tz_combo_prod_sku cps ON cp.combo_prod_id = cps.combo_prod_id
+        WHERE cp.status = 1 AND cp.combo_id = #{comboId}
+    )scp ON c.combo_id = scp.combo_id
+    WHERE c.combo_id = #{comboId} AND c.`status` = 1
+  </select>
+
+  <select id="listComboByComboIds" resultType="com.yami.shop.combo.multishop.dto.ComboSkuDto">
+    SELECT c.combo_id,c.name,cp.least_num,cps.sku_id,cps.matching_price,s.price
+    FROM tz_combo c
+    JOIN tz_combo_prod cp ON c.combo_id = cp.combo_id
+    JOIN tz_combo_prod_sku cps ON cp.combo_prod_id = cps.combo_prod_id
+    JOIN tz_sku s ON cps.sku_id = s.sku_id
+    WHERE cp.status = 1 AND c.combo_id IN
+    <foreach collection="comboIds" item="comboId" open="(" close=")" separator=",">
+        #{comboId}
+    </foreach>
+    AND cps.sku_id IN
+    <foreach collection="skuIds" item="skuId" open="(" close=")" separator=",">
+        #{skuId}
+    </foreach>
+  </select>
+  <update id="updateSoldNum">
+    <foreach collection="comboIds" item="comboId">
+        UPDATE tz_combo SET sold_num = (SELECT IFNULL(SUM(combo_num), 0) FROM tz_combo_order WHERE combo_id = #{comboId} AND `status` = 1) WHERE combo_id = #{comboId};
+    </foreach>
+  </update>
+  <select id="countNormalCombo" resultType="int">
+    SELECT IFNULL(COUNT(combo_id),0)
+    FROM tz_combo
+    WHERE status = 1 AND combo_id IN
+      <foreach collection="comboIds" item="comboId" separator="," open="(" close=")">
+          #{comboId}
+      </foreach>
+  </select>
+
+    <select id="notStartComboIdButStart" resultType="com.yami.shop.combo.multishop.model.Combo">
+        SELECT * FROM tz_combo WHERE start_time &lt; NOW() AND end_time &gt; NOW() AND `status` = 2
+    </select>
+
+<!--    <select id="batchUpdateComboStatus">-->
+<!--        update combo set status = #{status} where combo_id in-->
+<!--        <foreach collection="comboIdList" item="comboId" open="(" separator="," close=")">-->
+<!--            #{comboId}-->
+<!--        </foreach>-->
+<!--    </select>-->
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yami.shop.coupon.common.dao.CouponOnlyMapper">
+
+    <resultMap id="CouponAndCouponProdMap" type="com.yami.shop.coupon.common.model.CouponOnly">
+        <result column="group_num" jdbcType="BIGINT" property="groupNum"/>
+        <result column="group_name" jdbcType="VARCHAR" property="groupName"/>
+        <collection property="coupon" ofType="com.yami.shop.coupon.common.model.Coupon">
+            <id column="coupon_id" jdbcType="BIGINT" property="couponId"/>
+            <result column="shop_id" jdbcType="BIGINT" property="shopId"/>
+            <result column="coupon_name" jdbcType="VARCHAR" property="couponName"/>
+            <result column="sub_title" jdbcType="VARCHAR" property="subTitle"/>
+            <result column="get_way" jdbcType="TINYINT" property="getWay"/>
+            <result column="coupon_type" jdbcType="TINYINT" property="couponType"/>
+            <result column="cash_condition" jdbcType="DECIMAL" property="cashCondition"/>
+            <result column="reduce_amount" jdbcType="DECIMAL" property="reduceAmount"/>
+            <result column="coupon_discount" jdbcType="DECIMAL" property="couponDiscount"/>
+            <result column="valid_time_type" jdbcType="TINYINT" property="validTimeType"/>
+            <result column="launch_time" jdbcType="TIMESTAMP" property="launchTime"/>
+            <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+            <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+            <result column="after_receive_days" jdbcType="INTEGER" property="afterReceiveDays"/>
+            <result column="valid_days" jdbcType="INTEGER" property="validDays"/>
+            <result column="stocks" jdbcType="INTEGER" property="stocks"/>
+            <result column="source_stock" jdbcType="INTEGER" property="sourceStock"/>
+            <result column="suitable_prod_type" jdbcType="TINYINT" property="suitableProdType"/>
+            <result column="limit_num" jdbcType="INTEGER" property="limitNum"/>
+            <result column="version" jdbcType="INTEGER" property="version"/>
+            <result column="overdue_status" jdbcType="TINYINT" property="overdueStatus"/>
+            <result column="puton_status" jdbcType="TINYINT" property="putonStatus"/>
+        </collection>
+    </resultMap>
+
+
+    <select id="getPlatformPage" resultMap="CouponAndCouponProdMap">
+        SELECT co.group_num,co.group_name
+        FROM tz_coupon_only co GROUP BY co.group_num ORDER BY co.id DESC
+            LIMIT #{adapter.begin} , #{adapter.size}
+    </select>
+    <select id="countPlatform" resultType="java.lang.Long">
+        SELECT count(*)
+        FROM (
+        SELECT count(*) FROM tz_coupon_only temp
+        JOIN tz_coupon oi ON temp.coupon_id = oi.coupon_id
+            group by temp.group_num
+        )AS o
+    </select>
+    <select id="queryGroupListByCouponId" resultType="com.yami.shop.coupon.common.model.CouponOnly">
+        SELECT * FROM tz_coupon_only WHERE group_num = (SELECT group_num FROM tz_coupon_only WHERE coupon_id = #{couponId})
+    </select>
+    <select id="getCouponByGroupNum" resultType="com.yami.shop.coupon.common.model.Coupon">
+        select * from tz_coupon where coupon_id in (select coupon_id from tz_coupon_only where group_num = #{groupNum})
+    </select>
+</mapper>

@@ -1,0 +1,955 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yami.shop.coupon.common.dao.CouponMapper">
+    <resultMap id="BaseResultMap" type="com.yami.shop.coupon.common.model.Coupon">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="coupon_id" jdbcType="BIGINT" property="couponId"/>
+        <result column="shop_id" jdbcType="BIGINT" property="shopId"/>
+        <result column="coupon_name" jdbcType="VARCHAR" property="couponName"/>
+        <result column="sub_title" jdbcType="VARCHAR" property="subTitle"/>
+        <result column="coupon_type" jdbcType="TINYINT" property="couponType"/>
+        <result column="cash_condition" jdbcType="DECIMAL" property="cashCondition"/>
+        <result column="reduce_amount" jdbcType="DECIMAL" property="reduceAmount"/>
+        <result column="coupon_discount" jdbcType="DECIMAL" property="couponDiscount"/>
+        <result column="valid_time_type" jdbcType="TINYINT" property="validTimeType"/>
+        <result column="launch_time" jdbcType="TIMESTAMP" property="launchTime"/>
+        <result column="launch_end_time" jdbcType="TIMESTAMP" property="launchEndTime"/>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="after_receive_days" jdbcType="INTEGER" property="afterReceiveDays"/>
+        <result column="valid_days" jdbcType="INTEGER" property="validDays"/>
+        <result column="stocks" jdbcType="INTEGER" property="stocks"/>
+        <result column="source_stock" jdbcType="INTEGER" property="sourceStock"/>
+        <result column="suitable_prod_type" jdbcType="TINYINT" property="suitableProdType"/>
+        <result column="limit_num" jdbcType="INTEGER" property="limitNum"/>
+        <result column="version" jdbcType="INTEGER" property="version"/>
+        <result column="is_score_type" jdbcType="INTEGER" property="isScoreType"/>
+        <result column="score_price" jdbcType="INTEGER" property="scorePrice"/>
+        <result column="overdue_status" jdbcType="TINYINT" property="overdueStatus"/>
+        <result column="puton_status" jdbcType="TINYINT" property="putonStatus"/>
+        <result column="coupon_img" jdbcType="VARCHAR" property="couponImg"/>
+        <result column="claim_rules" jdbcType="VARCHAR" property="claimRules"/>
+        <result column="use_rules" jdbcType="VARCHAR" property="useRules"/>
+        <result column="store_preferential" jdbcType="VARCHAR" property="storePreferential"/>
+        <result column="is_group" jdbcType="INTEGER" property="isGroup"/>
+        <result column="group_amount" jdbcType="DECIMAL" property="groupAmount"/>
+        <result column="card_name" jdbcType="VARCHAR" property="cardName"/>
+        <result column="give_coupon_id" jdbcType="BIGINT" property="giveCouponId"/>
+        <result column="type" jdbcType="TINYINT" property="type"/>
+        <result column="time_type" jdbcType="TINYINT" property="timeType"/>
+    </resultMap>
+
+    <resultMap id="CouponAndCouponProdMap" type="com.yami.shop.coupon.common.model.Coupon">
+        <id column="coupon_id" jdbcType="BIGINT" property="couponId"/>
+        <result column="shop_id" jdbcType="BIGINT" property="shopId"/>
+        <result column="coupon_name" jdbcType="VARCHAR" property="couponName"/>
+        <result column="sub_title" jdbcType="VARCHAR" property="subTitle"/>
+        <result column="get_way" jdbcType="TINYINT" property="getWay"/>
+        <result column="coupon_type" jdbcType="TINYINT" property="couponType"/>
+        <result column="type" jdbcType="TINYINT" property="type"/>
+        <result column="cash_condition" jdbcType="DECIMAL" property="cashCondition"/>
+        <result column="reduce_amount" jdbcType="DECIMAL" property="reduceAmount"/>
+        <result column="coupon_discount" jdbcType="DECIMAL" property="couponDiscount"/>
+        <result column="valid_time_type" jdbcType="TINYINT" property="validTimeType"/>
+        <result column="launch_time" jdbcType="TIMESTAMP" property="launchTime"/>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="after_receive_days" jdbcType="INTEGER" property="afterReceiveDays"/>
+        <result column="time_type" jdbcType="TINYINT" property="timeType"/>
+        <result column="valid_days" jdbcType="INTEGER" property="validDays"/>
+        <result column="stocks" jdbcType="INTEGER" property="stocks"/>
+        <result column="source_stock" jdbcType="INTEGER" property="sourceStock"/>
+        <result column="suitable_prod_type" jdbcType="TINYINT" property="suitableProdType"/>
+        <result column="limit_num" jdbcType="INTEGER" property="limitNum"/>
+        <result column="version" jdbcType="INTEGER" property="version"/>
+        <result column="overdue_status" jdbcType="TINYINT" property="overdueStatus"/>
+        <result column="puton_status" jdbcType="TINYINT" property="putonStatus"/>
+        <result column="coupon_img" jdbcType="VARCHAR" property="couponImg"/>
+        <result column="claim_rules" jdbcType="VARCHAR" property="claimRules"/>
+        <result column="use_rules" jdbcType="VARCHAR" property="useRules"/>
+        <result column="store_preferential" jdbcType="VARCHAR" property="storePreferential"/>
+        <result column="launch_end_time" jdbcType="TIMESTAMP" property="launchEndTime"/>
+        <result column="is_group" jdbcType="INTEGER" property="isGroup"/>
+        <result column="group_amount" jdbcType="DECIMAL" property="groupAmount"/>
+        <result column="card_name" jdbcType="VARCHAR" property="cardName"/>
+        <result column="give_coupon_id" jdbcType="BIGINT" property="giveCouponId"/>
+        <result column="put_source" jdbcType="INTEGER" property="putSource"/>
+        <result column="is_pay_member" jdbcType="INTEGER" property="isPayMember"/>
+        <collection property="couponProds" ofType="com.yami.shop.coupon.common.model.CouponProd">
+            <id column="coupon_prod_id" jdbcType="BIGINT" property="couponProdId"/>
+            <!--下面注释不要打开，有bug-->
+            <!--<result column="coupon_id" jdbcType="BIGINT" property="couponId"/>-->
+            <result column="prod_id" jdbcType="BIGINT" property="prodId"/>
+            <result column="prod_name" jdbcType="VARCHAR" property="prodName"/>
+            <result column="pic" jdbcType="VARCHAR" property="pic"/>
+        </collection>
+        <collection property="couponShops" ofType="com.yami.shop.coupon.common.model.CouponShop">
+            <id column="coupon_shop_id" jdbcType="BIGINT" property="couponShopId"/>
+            <!--下面注释不要打开，有bug-->
+            <!--<result column="coupon_id" jdbcType="BIGINT" property="couponId"/>-->
+            <result column="shop_detail_id" jdbcType="BIGINT" property="shopId"/>
+            <result column="shop_name" jdbcType="VARCHAR" property="shopName"/>
+            <result column="shop_logo" jdbcType="VARCHAR" property="shopLogo"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="CouponAndCouponShopMap" type="com.yami.shop.coupon.common.model.Coupon">
+        <id column="coupon_id" jdbcType="BIGINT" property="couponId"/>
+        <result column="shop_id" jdbcType="BIGINT" property="shopId"/>
+        <result column="coupon_name" jdbcType="VARCHAR" property="couponName"/>
+        <result column="sub_title" jdbcType="VARCHAR" property="subTitle"/>
+        <result column="get_way" jdbcType="TINYINT" property="getWay"/>
+        <result column="coupon_type" jdbcType="TINYINT" property="couponType"/>
+        <result column="cash_condition" jdbcType="DECIMAL" property="cashCondition"/>
+        <result column="reduce_amount" jdbcType="DECIMAL" property="reduceAmount"/>
+        <result column="coupon_discount" jdbcType="DECIMAL" property="couponDiscount"/>
+        <result column="valid_time_type" jdbcType="TINYINT" property="validTimeType"/>
+        <result column="launch_time" jdbcType="TIMESTAMP" property="launchTime"/>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="after_receive_days" jdbcType="INTEGER" property="afterReceiveDays"/>
+        <result column="valid_days" jdbcType="INTEGER" property="validDays"/>
+        <result column="stocks" jdbcType="INTEGER" property="stocks"/>
+        <result column="source_stock" jdbcType="INTEGER" property="sourceStock"/>
+        <result column="suitable_prod_type" jdbcType="TINYINT" property="suitableProdType"/>
+        <result column="limit_num" jdbcType="INTEGER" property="limitNum"/>
+        <result column="version" jdbcType="INTEGER" property="version"/>
+        <result column="overdue_status" jdbcType="TINYINT" property="overdueStatus"/>
+        <result column="puton_status" jdbcType="TINYINT" property="putonStatus"/>
+        <result column="is_group" jdbcType="INTEGER" property="isGroup"/>
+        <result column="group_amount" jdbcType="DECIMAL" property="groupAmount"/>
+        <collection property="couponShops" ofType="com.yami.shop.coupon.common.model.CouponShop">
+            <id column="coupon_shop_id" jdbcType="BIGINT" property="couponShopId"/>
+            <!--下面注释不要打开，有bug-->
+            <result column="shop_id" jdbcType="BIGINT" property="shopId"/>
+            <result column="shop_name" jdbcType="VARCHAR" property="shopName"/>
+            <result column="shop_logo" jdbcType="VARCHAR" property="shopLogo"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="couponOrderDtoMap" type="com.yami.shop.bean.app.dto.CouponOrderDto">
+        <result column="coupon_user_id" jdbcType="BIGINT" property="couponUserId"/>
+        <result column="coupon_id" jdbcType="BIGINT" property="couponId"/>
+        <result column="shop_id" jdbcType="BIGINT" property="shopId"/>
+        <result column="coupon_name" jdbcType="VARCHAR" property="couponName"/>
+        <result column="sub_title" jdbcType="VARCHAR" property="subTitle"/>
+        <result column="coupon_type" jdbcType="TINYINT" property="couponType"/>
+        <result column="cash_condition" jdbcType="DECIMAL" property="cashCondition"/>
+        <result column="reduce_amount" jdbcType="DECIMAL" property="reduceAmount"/>
+        <result column="coupon_discount" jdbcType="DECIMAL" property="couponDiscount"/>
+        <result column="user_start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="user_end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="suitable_prod_type" jdbcType="TINYINT" property="suitableProdType"/>
+        <result column="coupon_user_id" jdbcType="BIGINT" property="couponUserId"/>
+        <result column="receive_time" jdbcType="TIMESTAMP" property="receiveTime"/>
+        <result column="valid_time_type" jdbcType="BIGINT" property="validTimeType"/>
+        <result column="after_receive_days" jdbcType="BIGINT" property="afterReceiveDays"/>
+        <result column="valid_days" jdbcType="BIGINT" property="validDays"/>
+        <collection property="prodIds" javaType="java.util.List" ofType="long">
+            <result column="prodIds"/>
+        </collection>
+        <collection property="shopIds" javaType="java.util.List" ofType="long">
+            <result column="shopIds"/>
+        </collection>
+    </resultMap>
+
+
+
+    <resultMap id="couponProdDtoMap" type="com.yami.shop.bean.app.dto.CouponDto">
+        <id column="coupon_id" jdbcType="BIGINT" property="couponId"/>
+        <result column="shop_id" jdbcType="BIGINT" property="shopId"/>
+        <result column="shop_name" jdbcType="VARCHAR" property="shopName"/>
+        <result column="shop_logo" jdbcType="VARCHAR" property="shopLogo"/>
+        <result column="coupon_name" jdbcType="VARCHAR" property="couponName"/>
+        <result column="sub_title" jdbcType="VARCHAR" property="subTitle"/>
+        <result column="coupon_type" jdbcType="TINYINT" property="couponType"/>
+        <result column="cash_condition" jdbcType="DECIMAL" property="cashCondition"/>
+        <result column="reduce_amount" jdbcType="DECIMAL" property="reduceAmount"/>
+        <result column="coupon_discount" jdbcType="DECIMAL" property="couponDiscount"/>
+        <result column="source_stock" jdbcType="INTEGER" property="sourceStock"/>
+        <result column="stocks" jdbcType="INTEGER" property="stocks"/>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="suitable_prod_type" jdbcType="TINYINT" property="suitableProdType"/>
+        <result column="coupon_user_id" jdbcType="BIGINT" property="couponUserId"/>
+        <result column="receive_time" jdbcType="TIMESTAMP" property="receiveTime"/>
+        <result column="valid_time_type" jdbcType="BIGINT" property="validTimeType"/>
+        <result column="after_receive_days" jdbcType="BIGINT" property="afterReceiveDays"/>
+        <result column="valid_days" jdbcType="BIGINT" property="validDays"/>
+        <result column="cur_user_receive_count" jdbcType="BIGINT" property="curUserReceiveCount"/>
+        <result column="user_use_count" jdbcType="INTEGER" property="userHasCount"/>
+        <result column="puton_status" jdbcType="TINYINT" property="putonStatus"/>
+        <result column="limit_num" jdbcType="INTEGER" property="limitNum"/>
+        <result column="coupon_img" jdbcType="VARCHAR" property="couponImg"/>
+        <result column="claim_rules" jdbcType="VARCHAR" property="claimRules"/>
+        <result column="store_preferential" jdbcType="VARCHAR" property="storePreferential"/>
+        <result column="use_rules" jdbcType="VARCHAR" property="useRules"/>
+        <result column="launch_time" jdbcType="TIMESTAMP" property="launchTime"/>
+        <result column="launch_end_time" jdbcType="TIMESTAMP" property="launchEndTime"/>
+        <result column="is_group" jdbcType="INTEGER" property="isGroup"/>
+        <result column="group_amount" jdbcType="DECIMAL" property="groupAmount"/>
+        <collection property="prods" javaType="java.util.List" ofType="com.yami.shop.bean.app.dto.ProductDto" column="coupon_id">
+            <id column="prod_id" jdbcType="BIGINT" property="prodId"/>
+            <result column="prod_name" jdbcType="VARCHAR" property="prodName"/>
+            <result column="pic" jdbcType="VARCHAR" property="pic"/>
+            <result column="price" jdbcType="DECIMAL" property="price"/>
+        </collection>
+    </resultMap>
+
+
+    <select id="getCouponAndCouponProdsByCouponId" resultMap="CouponAndCouponProdMap">
+        select c.*,cp.*,p.*,cs.*,sd.shop_id AS shop_detail_id,sd.shop_name,sd.shop_logo from tz_coupon c
+        left join tz_coupon_prod cp on c.coupon_id = cp.coupon_id
+        left join tz_coupon_shop cs on c.coupon_id = cs.coupon_id
+        left join tz_prod p on cp.prod_id = p.prod_id
+        left join tz_shop_detail sd on cs.shop_id = sd.shop_id
+        where c.coupon_id = #{id} ORDER BY cs.coupon_shop_id ASC
+    </select>
+
+    <update id="updateCouponStocksAndVersion">
+    update tz_coupon set version = version + 1, stocks = stocks - 1 where coupon_id = #{couponId} and stocks > 0
+  </update>
+
+    <update id="updateOverdueStatusByTime">
+    update tz_coupon set overdue_status = 0, puton_status = -1 where end_time &lt; #{now} and valid_time_type = 1
+  </update>
+
+    <update id="putonCoupon">
+    update tz_coupon set puton_status = 1 where launch_time &lt;= #{now} and overdue_status = 1 and stocks &gt; 0 and puton_status = 0
+  </update>
+
+    <select id="getCouponList" resultMap="couponProdDtoMap">
+        SET @tmp=NULL;
+        SET @rank=NULL;
+        SELECT item.*,sd.shop_logo,sd.shop_name,pl.prod_name FROM
+        (
+            SELECT IF(@tmp=coupon.coupon_id,@rank:=@rank + 1,@rank:=1) AS new_rank,@tmp:=coupon.coupon_id AS tmp, coupon.* FROM (
+                <!--全部商品参与-->
+                SELECT c.*,p.pic,p.price,p.prod_id,p.is_top
+                FROM (SELECT * FROM tz_coupon WHERE suitable_prod_type = 0 AND coupon_id IN
+                <foreach collection="couponIds" item="couponId" separator="," open="(" close=")">
+                    #{couponId}
+                </foreach>
+                ) c
+                JOIN tz_prod p ON p.status = 1 AND c.shop_id = p.shop_id
+                UNION ALL
+                <!--指定商品参与-->
+                SELECT c.*,p.pic,p.price,p.prod_id,p.is_top
+                FROM (SELECT * FROM tz_coupon WHERE suitable_prod_type = 1 AND coupon_id IN
+                <foreach collection="couponIds" item="couponId" separator="," open="(" close=")">
+                    #{couponId}
+                </foreach>
+                ) c
+                LEFT JOIN tz_coupon_prod cp ON cp.`coupon_id` = c.`coupon_id`
+                JOIN tz_prod p ON p.status = 1 AND p.prod_id = cp.prod_id
+                UNION ALL
+                <!--指定商品不参与-->
+                SELECT c.*,p.pic,p.price,p.prod_id,p.is_top
+                FROM (
+                SELECT * FROM tz_coupon WHERE suitable_prod_type = 2 AND coupon_id IN
+                <foreach collection="couponIds" item="couponId" separator="," open="(" close=")">
+                    #{couponId}
+                </foreach>
+                ) c
+                JOIN tz_prod p ON p.status = 1 AND p.prod_type &lt; 3 AND p.prod_id NOT IN (SELECT prod_id FROM tz_coupon_prod WHERE coupon_id = c.coupon_id) AND p.shop_id = c.shop_id
+            ) AS coupon
+            order by coupon.puton_status desc,coupon.coupon_id desc,coupon.is_top desc
+        ) AS item
+        JOIN tz_shop_detail sd ON sd.shop_id = item.shop_id AND sd.shop_status = 1
+        LEFT JOIN tz_prod_lang pl ON pl.prod_id = item.prod_id AND pl.lang = #{lang}
+        WHERE item.new_rank IN (1,2,3) AND item.prod_id IS NOT NULL
+    </select>
+
+    <select id="getCouponListTourist" resultMap="couponProdDtoMap">
+        SET @tmp=NULL;
+        SET @rank=NULL;
+        set @id=NULL;
+        <!--指定商品参与-->
+        <if test="couponForProd != null and couponForProd.size() > 0">
+            SELECT pc.*
+            FROM ( SELECT cp.prod_id,cp.pic,cp.price,cp.prod_name,c.*
+            FROM (
+            SELECT IF(@tmp=cp.coupon_id,@rank:=@rank + 1,@rank:=1) AS new_rank,@tmp:=coupon_id AS tmp,cp.coupon_prod_id,cp.coupon_id,p.prod_id,p.pic,p.price,p.prod_name
+            FROM tz_coupon_prod cp
+            JOIN tz_prod p ON p.prod_id = cp.`prod_id` AND p.`status` = 1
+            WHERE cp.coupon_id IN
+            <foreach collection="couponForProd" item="couponId" separator="," open="(" close=")">
+                #{couponId}
+            </foreach>
+            ORDER BY cp.coupon_id
+            ) AS cp
+            JOIN tz_coupon c ON c.coupon_id = cp.coupon_id WHERE cp.new_rank &lt;= 3
+            ) AS pc
+            <if test="(couponForAllProd != null and couponForAllProd.size() > 0) or (couponForElseProd != null and couponForElseProd.size() > 0)">
+                UNION
+            </if>
+        </if>
+        <if test="(couponForAllProd != null and couponForAllProd.size() > 0) or (couponForElseProd != null and couponForElseProd.size() > 0)">
+            SELECT pc.*
+            FROM  (
+            SELECT temp.prod_id,temp.pic,temp.price,temp.prod_name,c.*
+            FROM (
+            <!--全部商品参与-->
+            <foreach collection="couponForAllProd" item="coupon" separator="UNION">
+                (SELECT @id:=#{coupon.couponId} AS temp_id,p.* FROM tz_prod p WHERE p.status = 1 AND p.shop_id = #{coupon.shopId} LIMIT 0,3)
+            </foreach>
+            <if test="couponForAllProd != null and couponForAllProd.size() > 0 and couponForElseProd != null and couponForElseProd.size() > 0">
+                UNION
+            </if>
+            <!--指定商品不参与-->
+            <if test="couponForElseProd != null and couponForElseProd.size() > 0">
+                <foreach collection="couponForElseProd" item="coupon" separator="UNION">
+                    (SELECT @id:=#{coupon.couponId} AS temp_id,p.* FROM tz_prod p WHERE p.status = 1 AND p.shop_id = #{coupon.shopId}
+                    AND p.prod_id NOT IN (SELECT prod_id FROM tz_coupon_prod WHERE coupon_id = #{coupon.couponId}) LIMIT 0,3)
+                </foreach>
+            </if>
+            ) AS temp
+            JOIN tz_coupon c
+            ON c.coupon_id = temp.temp_id
+            ) AS pc
+        </if>
+    </select>
+
+    <!--<select id="generalCouponList" resultType="com.yami.shop.bean.app.dto.CouponDto">-->
+        <!--SELECT tc.*,tsd.`shop_name`-->
+        <!--FROM tz_coupon tc-->
+        <!--JOIN tz_shop_detail tsd-->
+        <!--ON tsd.`shop_id` = tc.`shop_id`-->
+        <!--WHERE-->
+        <!--tc.suitable_prod_type =0 &#45;&#45; 获取全部商品券-->
+          <!--&lt;!&ndash;AND tc.`stocks` >0&ndash;&gt;-->
+          <!--AND tc.`overdue_status` =1 AND tc.`puton_status` = 1 and tsd.shop_status = 1-->
+          <!--AND tc.`is_score_type` <![CDATA[<>]]> 1-->
+        <!--ORDER BY tc.start_time DESC-->
+    <!--</select>-->
+
+    <select id="generalCouponList" resultType="com.yami.shop.bean.app.dto.CouponDto">
+        SELECT c.*,cu.*
+        FROM tz_coupon c
+        LEFT JOIN
+        (
+            SELECT coupon_id, COUNT(*) cur_user_receive_count, SUM(IF(`status` = 1,1,0)) user_has_count  FROM tz_coupon_user
+            WHERE user_id = #{userId}
+            GROUP BY coupon_id
+        ) AS cu ON cu.coupon_id = c.coupon_id
+        <where>
+            <if test="coupon.putSource != null">
+                AND c.put_source = #{coupon.putSource}
+            </if>
+            AND c.shop_id = 0
+            AND c.`overdue_status` =1
+            AND (c.`puton_status` = 1 OR c.`puton_status` = 0)
+            AND c.`is_score_type` <![CDATA[<>]]> 1 AND IFNULL(c.`get_way`,0) <![CDATA[<>]]> 1
+        </where>
+        ORDER BY c.puton_status DESC,c.coupon_id DESC
+    </select>
+
+    <select id="generalCouponListTourist" resultType="com.yami.shop.bean.app.dto.CouponDto">
+        SELECT c.*
+        FROM tz_coupon c
+        <where>
+            <if test="coupon.putSource != null">
+                AND c.put_source = #{coupon.putSource}
+            </if>
+            AND c.shop_id = 0
+            AND c.`overdue_status` =1
+            AND (c.`puton_status` = 1 OR c.`puton_status` = 0)
+            AND c.`is_score_type` <![CDATA[<>]]> 1 AND IFNULL(c.`get_way`,0) <![CDATA[<>]]> 1
+        </where>
+        ORDER BY c.puton_status DESC,c.coupon_id DESC
+    </select>
+
+    <select id="getCouponListByStatus" resultType="com.yami.shop.bean.app.dto.CouponDto">
+        SELECT tc.*,tcu.*,sd.shop_name
+        FROM tz_coupon_user tcu
+        INNER JOIN tz_coupon tc
+        ON tcu.`coupon_id` = tc.`coupon_id`
+        LEFT JOIN tz_shop_detail sd
+        ON tc.`shop_id` = sd.shop_id
+        WHERE tcu.`user_id` = #{userId}
+        AND tc.puton_status NOT IN (2,3)
+        AND tcu.`status` = #{status}
+        AND tcu.is_delete = 0
+    </select>
+
+    <select id="getCouponUserInfo" resultType="com.yami.shop.bean.app.dto.CouponDto">
+        SELECT tc.*,tcu.*,sd.shop_name
+        FROM tz_coupon_user tcu
+        INNER JOIN tz_coupon tc
+        ON tcu.`coupon_id` = tc.`coupon_id`
+        LEFT JOIN tz_shop_detail sd
+        ON tc.`shop_id` = sd.shop_id
+        WHERE tcu.coupon_user_id = #{couponUserId}
+    </select>
+         <!--AND tc.puton_status = 1-->
+
+    <select id="getCouponListByShopIds" resultMap="couponOrderDtoMap">
+      select tc.*,tcp.prod_id as prodIds,tcu.*,tcs.shop_id AS shopIds  from tz_coupon tc
+      join tz_coupon_user tcu on tc.coupon_id = tcu.coupon_id
+      left join tz_coupon_prod tcp on tcp.coupon_id = tc.coupon_id
+      left join tz_coupon_shop tcs on tcs.coupon_id = tc.coupon_id
+
+      where tcu.user_id = #{userId}
+          -- 获取用户未使用的优惠券
+        AND tc.puton_status NOT IN (2,3)
+        and tcu.status = 1
+        and tcu.is_delete = 0
+        and tc.shop_id = #{shopId}
+    </select>
+        <!--and tc.puton_status = 1-->
+
+    <select id="listOverdueStatusShopIds" resultType="long">
+        SELECT shop_id FROM tz_coupon
+        WHERE end_time &lt; #{now}
+        and valid_time_type = 1
+        GROUP BY shop_id
+    </select>
+    <select id="listPutonCouponAndCouponProdsByShopId" resultMap="CouponAndCouponProdMap">
+        SELECT c.*,cp.*,p.*
+        FROM tz_coupon c
+                 LEFT JOIN tz_coupon_prod cp ON c.coupon_id = cp.coupon_id
+                 LEFT JOIN tz_prod p ON cp.prod_id = p.prod_id
+        WHERE c.`overdue_status` = 1 AND c.puton_status =1 AND c.shop_id =#{shopId} AND c.`is_score_type` <![CDATA[<>]]> 1
+        ORDER BY c.`start_time` DESC
+    </select>
+    <select id="listCouponIdsByUserId" resultType="com.yami.shop.bean.app.dto.CouponDto">
+        SELECT tcu.coupon_id,tcu.`status`,COUNT(tcu.coupon_id) AS cur_user_receive_count
+        FROM tz_coupon_user tcu
+        LEFT JOIN tz_coupon tc
+            ON tcu.`coupon_id` = tc.`coupon_id`
+        WHERE tcu.`user_id` = #{userId}
+          AND tcu.is_delete = 0
+        GROUP BY tcu.coupon_id,tcu.`status`
+    </select>
+          <!--AND  tc.puton_status = 1-->
+
+    <select id="getCouponCountByStatus" resultType="map">
+      SELECT
+      COUNT(CASE WHEN cu.`status` = 0 THEN 1 ELSE NULL END) AS 'expiredCount' ,-- 失效
+      COUNT(CASE WHEN cu.`status` = 1 THEN 1 ELSE NULL END) AS 'unUseCount', -- 有效
+      COUNT(CASE WHEN cu.`status` = 2 THEN 1 ELSE NULL END) AS 'useCount'  -- 过期
+      FROM tz_coupon_user cu
+      INNER JOIN tz_coupon c
+      ON c.`coupon_id` = cu.`coupon_id` AND c.puton_status NOT IN (2,3)
+      WHERE cu.`user_id` =#{userId}
+      AND cu.`is_delete` = 0
+    </select>
+      <!--AND c.`puton_status` =1-->
+
+    <select id="getPlatformPage" resultType="com.yami.shop.coupon.common.model.Coupon">
+        SELECT c.*,sd.shop_name `shop_name`
+        FROM tz_coupon c
+        LEFT JOIN tz_shop_detail sd ON c.`shop_id` = sd.`shop_id`
+        <where>
+            <if test="coupon.shopId != null">
+                AND c.shop_id = #{coupon.shopId}
+            </if>
+            <if test="coupon.shopId == null">
+                AND c.shop_id != 0
+            </if>
+            <if test="coupon.couponName !=null">
+                and trim(replace(c.coupon_name,' ','')) like trim(replace(concat('%',#{coupon.couponName},'%'),' ',''))
+            </if>
+            <if test="coupon.putonStatus != null">
+                AND c.puton_status = #{coupon.putonStatus}
+            </if>
+            <if test="coupon.putSource != null">
+                AND c.put_source = #{coupon.putSource}
+            </if>
+            <if test="coupon.overdueStatus != null">
+                AND c.overdue_status = #{coupon.overdueStatus}
+            </if>
+            <if test="coupon.launchEndTime != null">
+                AND c.launch_end_time &lt;= #{coupon.launchEndTime}
+            </if>
+            <if test="coupon.launchTime != null">
+                AND c.launch_time &gt;= #{coupon.launchTime}
+            </if>
+            <if test="coupon.endTime != null">
+                AND c.end_time &lt;= #{coupon.endTime}
+            </if>
+            <if test="coupon.startTime != null">
+                AND c.start_time &gt;= #{coupon.startTime}
+            </if>
+            <if test="coupon.couponType != null">
+                AND c.coupon_type = #{coupon.couponType}
+            </if>
+            <if test="coupon.isScoreType != null">
+                AND c.is_score_type = #{coupon.isScoreType}
+            </if>
+            <if test="coupon.shopName != null">
+                and trim(replace(sd.shop_name,' ','')) like trim(replace(concat('%',#{coupon.shopName},'%'),' ',''))
+            </if>
+        </where>
+        ORDER BY c.`coupon_id` DESC
+    </select>
+
+    <select id="getCouponsPage" resultType="com.yami.shop.coupon.common.model.Coupon">
+        SELECT c.*,sd.shop_name `shop_name`
+        FROM tz_coupon c
+        LEFT JOIN tz_shop_detail sd ON c.`shop_id` = sd.`shop_id`
+        <where>
+            <if test="coupon.couponName !=null">
+                and trim(replace(c.coupon_name,' ','')) like trim(replace(concat('%',#{coupon.couponName},'%'),' ',''))
+            </if>
+            <if test="coupon.putonStatus != null">
+                AND c.puton_status = #{coupon.putonStatus}
+            </if>
+            <if test="coupon.overdueStatus != null">
+                AND c.overdue_status = #{coupon.overdueStatus}
+            </if>
+            <if test="coupon.getWay != null">
+                AND c.get_way = #{coupon.getWay}
+            </if>
+        </where>
+        ORDER BY c.`coupon_id` DESC
+    </select>
+
+    <select id="getCoupons" resultType="com.yami.shop.coupon.common.model.Coupon">
+        SELECT c.coupon_id
+        FROM tz_coupon c
+        LEFT JOIN tz_shop_detail sd ON c.`shop_id` = sd.`shop_id`
+        <where>
+            <if test="coupon.shopId != null">
+                AND c.shop_id = #{coupon.shopId}
+            </if>
+            <if test="coupon.shopId == null">
+                AND c.shop_id != 0
+            </if>
+            <if test="coupon.couponName !=null">
+                and trim(replace(c.coupon_name,' ','')) like trim(replace(concat('%',#{coupon.couponName},'%'),' ',''))
+            </if>
+            <if test="coupon.putonStatus != null">
+                AND c.puton_status = #{coupon.putonStatus}
+            </if>
+            <if test="coupon.putSource != null">
+                AND c.put_source = #{coupon.putSource}
+            </if>
+            <if test="coupon.overdueStatus != null">
+                AND c.overdue_status = #{coupon.overdueStatus}
+            </if>
+            <if test="coupon.launchEndTime != null">
+                AND c.launch_end_time &lt;= #{coupon.launchEndTime}
+            </if>
+            <if test="coupon.launchTime != null">
+                AND c.launch_time &gt;= #{coupon.launchTime}
+            </if>
+            <if test="coupon.endTime != null">
+                AND c.end_time &lt;= #{coupon.endTime}
+            </if>
+            <if test="coupon.startTime != null">
+                AND c.start_time &gt;= #{coupon.startTime}
+            </if>
+            <if test="coupon.shopName != null">
+                and trim(replace(sd.shop_name,' ','')) like trim(replace(concat('%',#{coupon.shopName},'%'),' ',''))
+            </if>
+        </where>
+    </select>
+
+    <select id="statisticCoupon" resultType="com.yami.shop.coupon.common.model.Coupon">
+        SELECT sum(c.source_stock) as sourceStockTotal,sum(c.stocks) as stocksTotal,sd.shop_name `shop_name`
+        FROM tz_coupon c
+        LEFT JOIN tz_shop_detail sd ON c.`shop_id` = sd.`shop_id`
+        <where>
+            <if test="coupon.shopId != null">
+                AND c.shop_id = #{coupon.shopId}
+            </if>
+            <if test="coupon.shopId == null">
+                AND c.shop_id != 0
+            </if>
+            <if test="coupon.couponName !=null">
+                and trim(replace(c.coupon_name,' ','')) like trim(replace(concat('%',#{coupon.couponName},'%'),' ',''))
+            </if>
+            <if test="coupon.putonStatus != null">
+                AND c.puton_status = #{coupon.putonStatus}
+            </if>
+            <if test="coupon.putSource != null">
+                AND c.put_source = #{coupon.putSource}
+            </if>
+            <if test="coupon.overdueStatus != null">
+                AND c.overdue_status = #{coupon.overdueStatus}
+            </if>
+            <if test="coupon.launchEndTime != null">
+                AND c.launch_end_time &lt;= #{coupon.launchEndTime}
+            </if>
+            <if test="coupon.launchTime != null">
+                AND c.launch_time &gt;= #{coupon.launchTime}
+            </if>
+            <if test="coupon.endTime != null">
+                AND c.end_time &lt;= #{coupon.endTime}
+            </if>
+            <if test="coupon.startTime != null">
+                AND c.start_time &gt;= #{coupon.startTime}
+            </if>
+            <if test="coupon.shopName != null">
+                and trim(replace(sd.shop_name,' ','')) like trim(replace(concat('%',#{coupon.shopName},'%'),' ',''))
+            </if>
+        </where>
+    </select>
+
+    <select id="receiveAndUseStatistic" resultType="com.yami.shop.coupon.common.model.Coupon">
+        SELECT SUM(CASE WHEN DATE_FORMAT(cu.receive_time,'%Y-%m-%d') = date_sub(curdate(),interval 1 day)  THEN 1 ELSE 0 END) AS yesterDayReceiveTotal,
+        SUM(CASE WHEN DATE_FORMAT(cu.receive_time,'%Y-%m-%d') = curdate()  THEN 1 ELSE 0 END) AS todayReceiveTotal,
+        SUM(CASE WHEN DATE_FORMAT(cur.use_time,'%Y-%m-%d') = date_sub(curdate(),interval 1 day)  THEN 1 ELSE 0 END) AS yesterDayUseTotal,
+        SUM(CASE WHEN DATE_FORMAT(cur.use_time,'%Y-%m-%d') = curdate()  THEN 1 ELSE 0 END) AS todayUseTotal
+        FROM tz_coupon c
+        LEFT JOIN tz_coupon_user cu ON cu.coupon_id = c.coupon_id
+        LEFT JOIN tz_coupon_use_record cur ON cur.coupon_user_id = cu.coupon_user_id
+        LEFT JOIN tz_shop_detail sd ON c.`shop_id` = sd.`shop_id`
+        <where>
+            <if test="coupon.shopId != null">
+                AND c.shop_id = #{coupon.shopId}
+            </if>
+            <if test="coupon.shopId == null">
+                AND c.shop_id != 0
+            </if>
+            <if test="coupon.couponName !=null">
+                and trim(replace(c.coupon_name,' ','')) like trim(replace(concat('%',#{coupon.couponName},'%'),' ',''))
+            </if>
+            <if test="coupon.putonStatus != null">
+                AND c.puton_status = #{coupon.putonStatus}
+            </if>
+            <if test="coupon.putSource != null">
+                AND c.put_source = #{coupon.putSource}
+            </if>
+            <if test="coupon.overdueStatus != null">
+                AND c.overdue_status = #{coupon.overdueStatus}
+            </if>
+            <if test="coupon.launchEndTime != null">
+                AND c.launch_end_time &lt;= #{coupon.launchEndTime}
+            </if>
+            <if test="coupon.launchTime != null">
+                AND c.launch_time &gt;= #{coupon.launchTime}
+            </if>
+            <if test="coupon.endTime != null">
+                AND c.end_time &lt;= #{coupon.endTime}
+            </if>
+            <if test="coupon.startTime != null">
+                AND c.start_time &gt;= #{coupon.startTime}
+            </if>
+            <if test="coupon.shopName != null">
+                and trim(replace(sd.shop_name,' ','')) like trim(replace(concat('%',#{coupon.shopName},'%'),' ',''))
+            </if>
+        </where>
+    </select>
+
+    <select id="getMultiShopPage" resultType="com.yami.shop.coupon.common.model.Coupon">
+        SELECT c.*
+        FROM tz_coupon c
+        LEFT JOIN tz_shop_detail sd ON c.`shop_id` = sd.`shop_id`
+        <where>
+            <if test="coupon.shopId != null">
+                AND c.shop_id = #{coupon.shopId}
+            </if>
+            <if test="coupon.couponName !=null">
+                and trim(replace(c.coupon_name,' ','')) like trim(replace(concat('%',#{coupon.couponName},'%'),' ',''))
+            </if>
+            <if test="coupon.putonStatus != null">
+                AND c.puton_status = #{coupon.putonStatus}
+            </if>
+            <if test="coupon.overdueStatus != null">
+                AND c.overdue_status = #{coupon.overdueStatus}
+            </if>
+            <if test="coupon.launchEndTime != null">
+                AND c.launch_end_time &lt;= #{coupon.launchEndTime}
+            </if>
+            <if test="coupon.launchTime != null">
+                AND c.launch_time &gt;= #{coupon.launchTime}
+            </if>
+            <if test="coupon.endTime != null">
+                AND c.end_time &lt;= #{coupon.endTime}
+            </if>
+            <if test="coupon.startTime != null">
+                AND c.start_time &gt;= #{coupon.startTime}
+            </if>
+            <if test="coupon.couponType != null">
+                AND c.coupon_type = #{coupon.couponType}
+            </if>
+        </where>
+        ORDER BY c.`coupon_id` DESC
+    </select>
+
+    <select id="getShopCouponsPage" resultType="com.yami.shop.coupon.common.model.Coupon">
+        SELECT c.*
+        FROM tz_coupon c
+        LEFT JOIN tz_shop_detail sd ON c.`shop_id` = sd.`shop_id`
+        <where>
+            <if test="coupon.shopId != null">
+                AND c.shop_id = #{coupon.shopId}
+            </if>
+            <if test="coupon.couponName !=null">
+                and trim(replace(c.coupon_name,' ','')) like trim(replace(concat('%',#{coupon.couponName},'%'),' ',''))
+            </if>
+            <if test="coupon.putonStatus != null">
+                AND c.puton_status = #{coupon.putonStatus}
+            </if>
+            <if test="coupon.getWay != null">
+                AND c.get_way = #{coupon.getWay}
+            </if>
+            <if test="coupon.overdueStatus != null">
+                AND c.overdue_status = #{coupon.overdueStatus}
+            </if>
+        </where>
+        ORDER BY c.`coupon_id` DESC
+    </select>
+
+    <select id="shopWriteOffDetail" resultType="com.yami.shop.coupon.common.model.Coupon">
+        SELECT c.*
+        FROM tz_coupon c
+        <where>
+            <if test="coupon.shopId != null">
+                AND c.shop_id = #{coupon.shopId}
+            </if>
+            <if test="coupon.couponName !=null">
+                and trim(replace(c.coupon_name,' ','')) like trim(replace(concat('%',#{coupon.couponName},'%'),' ',''))
+            </if>
+            <if test="coupon.putonStatus != null">
+                AND c.puton_status = #{coupon.putonStatus}
+            </if>
+            <if test="coupon.overdueStatus != null">
+                AND c.overdue_status = #{coupon.overdueStatus}
+            </if>
+            <if test="coupon.launchEndTime != null">
+                AND c.launch_end_time &lt;= #{coupon.launchEndTime}
+            </if>
+            <if test="coupon.launchTime != null">
+                AND c.launch_time &gt;= #{coupon.launchTime}
+            </if>
+            <if test="coupon.endTime != null">
+                AND c.end_time &lt;= #{coupon.endTime}
+            </if>
+            <if test="coupon.startTime != null">
+                AND c.start_time &gt;= #{coupon.startTime}
+            </if>
+        </where>
+        ORDER BY c.`coupon_id` DESC
+    </select>
+    <select id="countTakeNum" resultType="java.lang.Integer">
+        select COUNT(cu.coupon_user_id)
+        from `tz_coupon_user` cu
+        left join `tz_coupon` c on cu.coupon_id = c.coupon_id
+        <where> cu.coupon_id = #{couponId}
+            <if test="shopId != null">
+                AND c.shop_id = #{shopId}
+            </if>
+        </where>
+        GROUP BY cu.coupon_id
+    </select>
+    <select id="countUseNum" resultType="java.lang.Integer">
+        select count(cur.coupon_use_record_id)
+        from `tz_coupon_user` cu
+        LEFT JOIN `tz_coupon_use_record` cur ON cur.coupon_user_id = cu.coupon_user_id
+        where cu.coupon_id = #{couponId} and cur.status = 2
+        group by cu.coupon_id
+    </select>
+
+    <select id="countTakeNumTotal" resultType="java.lang.Integer">
+        select COUNT(cu.coupon_user_id)
+        from `tz_coupon_user` cu
+        left join `tz_coupon` c on cu.coupon_id = c.coupon_id
+        <where> cu.coupon_id in
+            <foreach collection="couponIds" item="couponId" separator="," open="(" close=")">
+                #{couponId}
+            </foreach>
+            <if test="shopId != null">
+                AND c.shop_id = #{shopId}
+            </if>
+        </where>
+    </select>
+    <select id="countUseNumTotal" resultType="java.lang.Integer">
+        select count(cur.coupon_use_record_id)
+        from `tz_coupon_user` cu
+        LEFT JOIN `tz_coupon_use_record` cur ON cur.coupon_user_id = cu.coupon_user_id
+        where cur.status = 2 and cu.coupon_id in
+        <foreach collection="couponIds" item="couponId" separator="," open="(" close=")">
+            #{couponId}
+        </foreach>
+    </select>
+
+    <update id="updatePutOnStatusByCouponId">
+        UPDATE tz_coupon c SET c.`puton_status` =#{status} WHERE c.`coupon_id` = #{couponId}
+    </update>
+
+    <select id="getShopAvailableCouponIds" resultType="java.lang.Long">
+        SELECT c.coupon_id FROM tz_coupon c
+        LEFT JOIN tz_coupon_prod cp ON cp.`coupon_id` = c.`coupon_id`
+        JOIN tz_prod p ON p.status = 1 AND
+        ((c.shop_id = p.shop_id AND c.suitable_prod_type=0) OR (p.prod_id = cp.prod_id  AND c.suitable_prod_type=1) OR (p.prod_id != cp.prod_id  AND c.suitable_prod_type=2 AND p.shop_id = c.shop_id))
+        JOIN tz_shop_detail sd ON sd.shop_id = c.shop_id AND sd.shop_status = 1
+        WHERE c.overdue_status = 1 AND (c.puton_status = 0 or c.puton_status = 1) AND c.is_score_type = 0 AND c.shop_id != 0 AND c.get_way = 0
+        GROUP BY c.coupon_id
+        ORDER BY c.puton_status DESC,c.coupon_id DESC
+        LIMIT #{adapter.begin}, #{adapter.size}
+    </select>
+
+    <update id="updateOverdueStatusByCouponId">
+        UPDATE tz_coupon c SET c.`overdue_status` =#{overdueStatus} WHERE c.`coupon_id` = #{couponId}
+    </update>
+    <select id="countCouponPageByCouponDto" resultType="long">
+        SELECT COUNT(DISTINCT c.coupon_id) FROM tz_coupon c
+        LEFT JOIN tz_coupon_prod cp ON cp.`coupon_id` = c.`coupon_id`
+        JOIN tz_prod p ON p.status = 1 AND (
+               (c.shop_id = p.shop_id AND c.suitable_prod_type=0) OR
+               (p.prod_id = cp.prod_id  AND c.suitable_prod_type=1) OR
+               (p.prod_id != cp.prod_id  AND c.suitable_prod_type=2 AND p.shop_id = c.shop_id)
+        )
+        JOIN tz_shop_detail sd ON sd.shop_id = c.shop_id AND sd.shop_status = 1
+        WHERE c.overdue_status = 1 AND c.puton_status = 1 AND c.is_score_type = 0 AND
+        c.shop_id != 0 AND c.get_way = 0
+    </select>
+
+
+    <update id="updateCoupon">
+        UPDATE tz_coupon
+        <set>
+            <if test="coupon.shopId != null">
+                `shop_id` = #{coupon.shopId},
+            </if>
+            <if test="coupon.couponName != null">
+                `coupon_name` = #{coupon.couponName},
+            </if>
+            <if test="coupon.couponName != null">
+                `sub_title` = #{coupon.subTitle},
+            </if>
+            <if test="coupon.couponType != null">
+                `coupon_type` = #{coupon.couponType},
+            </if>
+            <if test="coupon.type != null">
+                `type` = #{coupon.type},
+            </if>
+            <if test="coupon.putSource != null">
+                `put_source` = #{coupon.putSource},
+            </if>
+            <if test="coupon.cashCondition != null">
+                `cash_condition` = #{coupon.cashCondition},
+            </if>
+            <if test="coupon.reduceAmount != null">
+                `reduce_amount` = #{coupon.reduceAmount},
+            </if>
+            <if test="coupon.couponDiscount != null">
+                `coupon_discount` = #{coupon.couponDiscount},
+            </if>
+            <if test="coupon.validTimeType != null">
+                `valid_time_type` = #{coupon.validTimeType},
+            </if>
+            `launch_time` = #{coupon.launchTime},
+            `launch_end_time` = #{coupon.launchEndTime},
+            <if test="coupon.startTime != null">
+                `start_time` = #{coupon.startTime},
+            </if>
+            <if test="coupon.endTime != null">
+                `end_time` = #{coupon.endTime},
+            </if>
+            <if test="coupon.afterReceiveDays != null">
+                `after_receive_days` = #{coupon.afterReceiveDays},
+            </if>
+            <if test="coupon.timeType != null">
+                `time_type` = #{coupon.timeType},
+            </if>
+            <if test="coupon.validDays != null">
+                `valid_days` = #{coupon.validDays},
+            </if>
+            <if test="coupon.stocks != null">
+                `stocks` = #{coupon.stocks},
+            </if>
+            <if test="coupon.sourceStock != null">
+                `source_stock` = #{coupon.sourceStock},
+            </if>
+            <if test="coupon.suitableProdType != null">
+                `suitable_prod_type` = #{coupon.suitableProdType},
+            </if>
+            <if test="coupon.limitNum != null">
+                `limit_num` = #{coupon.limitNum},
+            </if>
+            <if test="coupon.version != null">
+                `version` = #{coupon.version} + 1,
+            </if>
+            <if test="coupon.overdueStatus != null">
+                `overdue_status` = #{coupon.overdueStatus},
+            </if>
+            <if test="coupon.putonStatus != null">
+                `puton_status` = #{coupon.putonStatus},
+            </if>
+            <if test="coupon.getWay != null">
+                `get_way` = #{coupon.getWay},
+            </if>
+            <if test="coupon.couponImg != null">
+                `coupon_img` = #{coupon.couponImg},
+            </if>
+            <if test="coupon.claimRules != null">
+                `claim_rules` = #{coupon.claimRules},
+            </if>
+            <if test="coupon.useRules != null">
+                `use_rules` = #{coupon.useRules},
+            </if>
+            <if test="coupon.storePreferential != null and coupon.storePreferential != ''">
+                `store_preferential` = #{coupon.storePreferential},
+            </if>
+            <if test="coupon.groupAmount != null">
+                `group_amount` = #{coupon.groupAmount},
+            </if>
+            <if test="coupon.isPayMember != null">
+                `is_pay_member` = #{coupon.isPayMember},
+            </if>
+        </set>
+        WHERE coupon_id = #{coupon.couponId}
+        <if test="coupon.version != null">
+            and `version` = #{coupon.version}
+        </if>
+    </update>
+
+    <update id="cancelPutCoupon">
+        update tz_coupon set puton_status = -1 where launch_end_time &lt;= #{now} and overdue_status = 1 and puton_status = 1 and launch_end_time is not null
+    </update>
+
+
+    <select id="queryCouponUserDetail" resultType="com.yami.shop.bean.app.dto.CouponDto">
+        SELECT c.*,cu.*
+        FROM tz_coupon c
+        LEFT JOIN
+        (
+        SELECT coupon_id, COUNT(*) cur_user_receive_count, SUM(IF(`status` = 1,1,0)) user_has_count  FROM tz_coupon_user
+        WHERE user_id = #{userId}
+        GROUP BY coupon_id
+        ) AS cu ON cu.coupon_id = c.coupon_id
+        WHERE c.coupon_id = #{couponId}
+        <if test="shopId != null">
+            AND c.shop_id = #{shopId}
+        </if>
+        AND c.`overdue_status` =1
+--         AND (c.`puton_status` = 1 OR c.`puton_status` = 0)
+        AND c.`is_score_type` <![CDATA[<>]]> 1
+        ORDER BY c.coupon_id DESC
+    </select>
+
+    <select id="getShopAllCouponList" resultType="com.yami.shop.bean.app.dto.CouponDto">
+        select c.coupon_id,c.coupon_name from tz_coupon c
+        <where>
+            <if test="coupon.shopId != null">
+                AND c.shop_id = #{coupon.shopId}
+            </if>
+            <if test="coupon.putonStatus != null">
+                AND c.puton_status = #{coupon.putonStatus}
+            </if>
+            <if test="coupon.isGroup != null">
+                AND c.is_group = #{coupon.isGroup}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryNoUseCouponList" resultType="com.yami.shop.bean.model.CouponOrder">
+        SELECT  coupon_order_id
+             , coupon_order_number
+             ,tz_pay_info.pay_no
+             , tz_coupon_order.coupon_id
+             , pay_amount
+             ,tz_coupon_order.shop_id
+             ,tz_coupon_order.user_id
+        FROM tz_coupon_user
+        JOIN tz_coupon_order ON tz_coupon_order.user_id = tz_coupon_user.user_id and tz_coupon_order.coupon_id = tz_coupon_user.coupon_id
+        JOIN tz_pay_info ON tz_pay_info.order_numbers = tz_coupon_order.coupon_order_number
+        WHERE tz_coupon_user.`status` = 0 and tz_coupon_user.coupon_id = 201 and tz_coupon_order.`status` = 2
+    </select>
+</mapper>

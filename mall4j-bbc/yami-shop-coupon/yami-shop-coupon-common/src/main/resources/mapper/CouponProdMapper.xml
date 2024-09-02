@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yami.shop.coupon.common.dao.CouponProdMapper">
+
+    <resultMap id="BaseResultMap" type="com.yami.shop.coupon.common.model.CouponProd">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="coupon_prod_id" jdbcType="BIGINT" property="couponProdId"/>
+        <result column="coupon_id" jdbcType="BIGINT" property="couponId"/>
+        <result column="prod_id" jdbcType="BIGINT" property="prodId"/>
+    </resultMap>
+
+
+    <delete id="deleteCouponProdsByCouponId">
+    delete from tz_coupon_prod where coupon_id = #{couponId}
+  </delete>
+
+    <insert id="insertCouponProdsBatch">
+        insert into tz_coupon_prod (coupon_id, prod_id) values
+        <foreach collection="prodIds" item="prodId" separator=",">
+            (#{couponId}, #{prodId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteCouponProdsByCouponIds">
+        DELETE FROM tz_coupon_prod
+        WHERE coupon_id IN
+        <foreach collection="couponIds" item="couponId" separator="," open="(" close=")">
+            #{couponId}
+        </foreach>
+    </delete>
+</mapper>

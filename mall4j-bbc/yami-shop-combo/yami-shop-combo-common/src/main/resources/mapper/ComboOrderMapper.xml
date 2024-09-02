@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yami.shop.combo.multishop.dao.ComboOrderMapper">
+
+  <resultMap id="comboOrderMap" type="com.yami.shop.combo.multishop.model.ComboOrder">
+    <id column="combo_order_id" property="comboOrderId" />
+    <result column="shop_id" property="shopId"/>
+    <result column="combo_id" property="comboId"/>
+    <result column="user_id" property="userId"/>
+    <result column="combo_num" property="comboNum"/>
+    <result column="pay_price" property="payPrice"/>
+    <result column="order_number" property="orderNumber"/>
+    <result column="create_time" property="createTime"/>
+    <result column="update_time" property="updateTime"/>
+    <result column="status" property="status"/>
+  </resultMap>
+  <select id="listByOrderNumberList" resultMap="comboOrderMap">
+    SELECT combo_order_id,`status`,order_number,combo_id FROM `tz_combo_order`
+        <where>
+            <foreach collection="orderNumberList" item="orderNumber">
+                OR order_number LIKE CONCAT("%", #{orderNumber}, "%")
+            </foreach>
+        </where>
+  </select>
+</mapper>
