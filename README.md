@@ -200,8 +200,7 @@ SmartMall
 * 公司主页：https://www.scmintu.com/
 ## 🥪 微信
 微信联系方式：微信号 wxid_1uhin30bp6xv12
+
 ![微信](vx_images/vx.jpg)
-
-
 
 
