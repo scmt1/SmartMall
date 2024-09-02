@@ -68,7 +68,7 @@ SmartMall是一套适合超市、购物中心、个体店铺使用的开源智�
 
 SmartMall
 
-├──mall4j-bbc -- 系统后端
+├──mall-bbc -- 系统后端
 ├──mall4uni-bbc -- 手机端
 ├──mall4vp-bbc -- 运营前端
 ├──mall4vs-bbc -- 商家前端
