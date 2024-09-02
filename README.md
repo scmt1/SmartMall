@@ -139,9 +139,9 @@ SmartMall
 ![](vx_images/26.png)
 ### 3、商家店铺移动端
 #### 3.1店铺首页
-![](vx_images/27.jpg)
+![](vx_images/27.png)
 #### 3.2订单管理
-![](vx_images/28.png)![](vx_images/29.jpg)
+![](vx_images/28.png)![](vx_images/29.png)
 #### 3.3商品管理
 ![](vx_images/30.png)![](vx_images/31.png)
 
